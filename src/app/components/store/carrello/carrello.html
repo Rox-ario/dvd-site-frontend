@@ -1,0 +1,92 @@
+<div class="cart-container">
+
+  <header class="cart-header">
+    <h1>Il tuo Carrello</h1>
+  </header>
+
+  <ng-container *ngIf="cartItems$ | async as elementi">
+
+    <div class="empty-state" *ngIf="elementi.length === 0">
+      <div class="empty-icon">🛒</div>
+      <h2>Il tuo carrello è vuoto</h2>
+      <p>Non hai ancora aggiunto nessun capolavoro. Scopri il nostro catalogo!</p>
+      <a routerLink="/catalogo" class="btn-primary">Vai al Catalogo</a>
+    </div>
+
+    <div class="cart-content" *ngIf="elementi.length > 0">
+
+      <div class="cart-items-list">
+        <div class="cart-actions-top">
+          <button class="btn-text text-danger" (click)="svuotaTutto()">Svuota Carrello</button>
+        </div>
+
+        <article class="cart-item" *ngFor="let item of elementi">
+          <div class="item-image">
+            <img [src]="item.film.urlImmagine" [alt]="item.film.titolo">
+          </div>
+
+          <div class="item-details">
+            <h3>{{ item.film.titolo }}</h3>
+            <p class="item-price">{{ item.film.prezzo | currency:'EUR':'symbol':'1.2-2' }}</p>
+          </div>
+
+          <div class="item-actions">
+            <div class="quantity-controls">
+              <button
+                class="btn-icon"
+                (click)="cambiaQuantita(item.film.idFilm, item.quantita, -1, item.film.stock)"
+                [disabled]="item.quantita <= 1"
+                aria-label="Riduci quantità">-</button>
+
+              <span class="quantity-display">{{ item.quantita }}</span>
+
+              <button
+                class="btn-icon"
+                (click)="cambiaQuantita(item.film.idFilm, item.quantita, 1, item.film.stock)"
+                [disabled]="item.quantita >= item.film.stock"
+                aria-label="Aumenta quantità">+</button>
+            </div>
+
+            <button class="btn-icon text-danger" (click)="rimuoviArticolo(item.film.idFilm)" title="Rimuovi">
+              🗑️
+            </button>
+          </div>
+
+          <div class="item-total">
+            {{ (item.film.prezzo * item.quantita) | currency:'EUR':'symbol':'1.2-2' }}
+          </div>
+        </article>
+      </div>
+
+      <aside class="cart-summary">
+        <h2>Riepilogo Ordine</h2>
+        <div class="summary-row">
+          <span>Articoli ({{ elementi.length }})</span>
+          <span>{{ cartService.calcolaTotale(elementi) | currency:'EUR':'symbol':'1.2-2' }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Spedizione</span>
+          <span class="text-success">Gratuita</span>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row total-row">
+          <span>Totale</span>
+          <span>{{ cartService.calcolaTotale(elementi) | currency:'EUR':'symbol':'1.2-2' }}</span>
+        </div>
+
+        <button class="btn-primary btn-block mt-4" (click)="procediAlCheckout()">
+          Procedi al Checkout
+        </button>
+
+        <div class="secure-checkout-note">
+          🔒 Pagamento sicuro e crittografato
+        </div>
+      </aside>
+
+    </div>
+
+  </ng-container>
+
+</div>

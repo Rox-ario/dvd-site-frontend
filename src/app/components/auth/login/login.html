@@ -1,0 +1,54 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>Bentornato</h2>
+      <p>Accedi al tuo account per continuare</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="es. mario.rossi@email.com"
+          [class.invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+        >
+        <div class="error-text" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          <span *ngIf="loginForm.get('email')?.errors?.['required']">L'email è obbligatoria.</span>
+          <span *ngIf="loginForm.get('email')?.errors?.['email']">Inserisci un formato email valido.</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Inserisci la tua password"
+          [class.invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+        >
+        <div class="error-text" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          La password è obbligatoria.
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Accedi</span>
+        <span *ngIf="isLoading">Verifica in corso...</span>
+      </button>
+
+    </form>
+
+    <div class="auth-footer">
+      <p>Non hai un account? <a routerLink="/auth/registrazione">Registrati ora</a></p>
+    </div>
+  </div>
+</div>

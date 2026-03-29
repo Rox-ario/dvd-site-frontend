@@ -1,0 +1,72 @@
+<div class="catalog-container">
+
+  <header class="catalog-header">
+    <div class="header-content">
+      <h1>Catalogo DVD</h1>
+      <p>Esplora la nostra collezione di capolavori.</p>
+
+      <div class="search-bar">
+        <input
+          type="text"
+          [formControl]="searchControl"
+          placeholder="Cerca un film per titolo..."
+          autocomplete="off"
+        >
+      </div>
+    </div>
+  </header>
+
+  <div class="alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <main class="grid-container" *ngIf="film$ | async as filmList; else loadingTemplate">
+
+    <div class="empty-state" *ngIf="filmList.length === 0 && !errorMessage">
+      <p>Nessun film trovato con i criteri di ricerca attuali.</p>
+    </div>
+
+    <div class="movie-grid">
+      <article class="movie-card" *ngFor="let film of filmList">
+
+        <div class="badge-overlay" *ngIf="!film.isAttivo || film.stock === 0">
+          Esaurito
+        </div>
+
+        <div class="card-img-container">
+          <img [src]="film.urlImmagine" [alt]="'Locandina di ' + film.titolo" loading="lazy">
+        </div>
+
+        <div class="card-content">
+          <div class="movie-meta">
+            <span class="anno">{{ film.anno }}</span>
+            <span class="generi" *ngIf="film.genere?.length">{{ film.genere[0] }}</span>
+          </div>
+
+          <h3 class="movie-title">{{ film.titolo }}</h3>
+          <p class="movie-price">{{ film.prezzo | currency:'EUR':'symbol':'1.2-2' }}</p>
+
+          <button
+            class="btn-primary"
+            [disabled]="!film.isAttivo || film.stock === 0"
+            (click)="aggiungiAlCarrello(film)"
+            [class.btn-success]="aggiuntiDiRecente.has(film.idFilm)">
+
+            <span *ngIf="!aggiuntiDiRecente.has(film.idFilm)">Aggiungi al Carrello</span>
+            <span *ngIf="aggiuntiDiRecente.has(film.idFilm)">✓ Aggiunto!</span>
+
+          </button>
+        </div>
+      </article>
+    </div>
+
+  </main>
+
+  <ng-template #loadingTemplate>
+    <div class="loader-container">
+      <div class="spinner"></div>
+      <p>Caricamento catalogo in corso...</p>
+    </div>
+  </ng-template>
+
+</div>

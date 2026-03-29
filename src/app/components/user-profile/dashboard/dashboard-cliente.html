@@ -1,0 +1,84 @@
+<div class="dashboard-container">
+
+  <header class="dashboard-header">
+    <h1>Area Personale</h1>
+    <p>Gestisci il tuo account e le tue preferenze</p>
+  </header>
+
+  <div class="loader" *ngIf="isLoading && !profilo">Caricamento in corso...</div>
+
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="dashboard-grid" *ngIf="profilo">
+
+    <section class="profile-card">
+      <div class="card-header">
+        <h2>Dati Anagrafici</h2>
+        <button class="btn-text" (click)="toggleEditMode()">
+          {{ isEditing ? 'Annulla' : 'Modifica' }}
+        </button>
+      </div>
+
+      <div class="card-body" *ngIf="!isEditing">
+        <div class="data-row">
+          <span class="label">Nome</span>
+          <span class="value">{{ profilo.nome }}</span>
+        </div>
+        <div class="data-row">
+          <span class="label">Cognome</span>
+          <span class="value">{{ profilo.cognome }}</span>
+        </div>
+        <div class="data-row">
+          <span class="label">Email</span>
+          <span class="value">{{ profilo.email }}</span>
+        </div>
+        <div class="data-row mt-2">
+          <span class="badge role-badge">{{ profilo.ruolo }}</span>
+        </div>
+      </div>
+
+      <form class="card-body edit-form" [formGroup]="editForm" (ngSubmit)="salvaModifiche()" *ngIf="isEditing">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" formControlName="nome" [class.invalid]="editForm.get('nome')?.invalid && editForm.get('nome')?.touched">
+        </div>
+
+        <div class="form-group">
+          <label>Cognome</label>
+          <input type="text" formControlName="cognome" [class.invalid]="editForm.get('cognome')?.invalid && editForm.get('cognome')?.touched">
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="editForm.invalid || isLoading">
+          {{ isLoading ? 'Salvataggio...' : 'Salva Modifiche' }}
+        </button>
+      </form>
+    </section>
+
+    <div class="side-column">
+
+      <section class="loyalty-card">
+        <div class="loyalty-icon">⭐</div>
+        <div class="loyalty-data">
+          <h3>Punti Fedeltà</h3>
+          <p class="points">{{ profilo.puntiFedeltà }}</p>
+        </div>
+      </section>
+
+      <section class="favorites-card">
+        <h2>I tuoi Preferiti</h2>
+
+        <div class="empty-state" *ngIf="profilo.filmPreferiti.length === 0">
+          Non hai ancora aggiunto film ai preferiti. Esplora il catalogo!
+        </div>
+
+        <ul class="favorites-list" *ngIf="profilo.filmPreferiti.length > 0">
+          <li *ngFor="let titolo of profilo.filmPreferiti">
+            <span class="movie-icon">🎬</span> {{ titolo }}
+          </li>
+        </ul>
+      </section>
+
+    </div>
+  </div>
+</div>
+

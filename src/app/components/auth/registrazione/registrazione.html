@@ -1,0 +1,72 @@
+<div class="auth-wrapper">
+  <div class="auth-card register-card">
+    <div class="auth-header">
+      <h2>Crea un account</h2>
+      <p>Unisciti al nostro store in pochi secondi</p>
+    </div>
+
+    <div class="alert alert-success" *ngIf="successMessage">
+      {{ successMessage }}
+      <p class="small-text">Reindirizzamento al login in corso...</p>
+    </div>
+
+    <div class="alert alert-danger" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" *ngIf="!successMessage">
+
+      <div class="form-row">
+        <div class="form-group half-width">
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" formControlName="nome" [class.invalid]="registerForm.get('nome')?.invalid && registerForm.get('nome')?.touched">
+          <div class="error-text" *ngIf="registerForm.get('nome')?.invalid && registerForm.get('nome')?.touched">
+            Nome obbligatorio.
+          </div>
+        </div>
+
+        <div class="form-group half-width">
+          <label for="cognome">Cognome</label>
+          <input type="text" id="cognome" formControlName="cognome" [class.invalid]="registerForm.get('cognome')?.invalid && registerForm.get('cognome')?.touched">
+          <div class="error-text" *ngIf="registerForm.get('cognome')?.invalid && registerForm.get('cognome')?.touched">
+            Cognome obbligatorio.
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" formControlName="email" [class.invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+        <div class="error-text" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+          Inserisci un'email valida.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" formControlName="password" [class.invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+        <div class="error-text" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+          Minimo 6 caratteri.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confermaPassword">Conferma Password</label>
+        <input type="password" id="confermaPassword" formControlName="confermaPassword" [class.invalid]="registerForm.get('confermaPassword')?.invalid && registerForm.get('confermaPassword')?.touched">
+        <div class="error-text" *ngIf="registerForm.get('confermaPassword')?.hasError('passwordMismatch') && registerForm.get('confermaPassword')?.touched">
+          Le password non coincidono.
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Registrati</span>
+        <span *ngIf="isLoading">Creazione in corso...</span>
+      </button>
+
+    </form>
+
+    <div class="auth-footer" *ngIf="!successMessage">
+      <p>Hai già un account? <a routerLink="/auth/login">Accedi qui</a></p>
+    </div>
+  </div>
+</div>
