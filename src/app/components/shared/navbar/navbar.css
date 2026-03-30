@@ -1,0 +1,99 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px -1px rgba(0,0,0,0.1);
+}
+
+.navbar-brand .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  text-decoration: none;
+}
+
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-link {
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: #2563eb;
+}
+
+.admin-link {
+  color: #059669;
+}
+
+.cart-link {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* Il badge rosso col numeretto */
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  background-color: #dc2626;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 0.1rem 0.4rem;
+  border-radius: 50%;
+  min-width: 18px;
+  text-align: center;
+}
+
+.auth-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid #e5e7eb;
+}
+
+.btn-primary-outline {
+  border: 2px solid #2563eb;
+  color: #2563eb;
+  background: transparent;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-primary-outline:hover {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.text-danger {
+  color: #dc2626;
+}
+.text-danger:hover {
+  text-decoration: underline;
+}

@@ -1,4 +1,32 @@
-.storico-container {
-  padding: 20px;
-}
+.storico-container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+.header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; }
+.header-actions h1 { margin: 0; color: #111827; }
+.btn-outline { padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 6px; color: #4b5563; text-decoration: none; font-weight: 500; }
+.btn-outline:hover { background-color: #f3f4f6; }
+
+.empty-state { text-align: center; padding: 4rem 1rem; background: #f9fafb; border-radius: 8px; }
+.btn-primary { background-color: #2563eb; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 1rem; }
+
+.ordini-list { display: flex; flex-direction: column; gap: 1.5rem; }
+.ordine-card { background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; }
+.ordine-header { background: #f9fafb; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap; gap: 1rem; }
+.ordine-info h3 { margin: 0 0 0.25rem 0; font-size: 1.1rem; }
+.data { color: #6b7280; font-size: 0.9rem; }
+.ordine-status { display: flex; align-items: center; gap: 1.5rem; }
+.totale { font-weight: 700; font-size: 1.25rem; color: #111827; }
+
+.badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.badge.in_elaborazione { background: #fef3c7; color: #92400e; }
+.badge.spedito { background: #dbeafe; color: #1e40af; }
+.badge.consegnato { background: #d1fae5; color: #065f46; }
+.badge.annullato { background: #fee2e2; color: #991b1b; }
+
+.ordine-body { padding: 1.5rem; }
+.ordine-body h4 { margin: 0 0 1rem 0; font-size: 0.95rem; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em; }
+.articoli-list { list-style: none; padding: 0; margin: 0; }
+.articoli-list li { display: flex; align-items: center; padding: 0.75rem 0; border-bottom: 1px dashed #e5e7eb; }
+.articoli-list li:last-child { border-bottom: none; padding-bottom: 0; }
+.qty { font-weight: 600; color: #6b7280; width: 40px; }
+.titolo { flex: 1; font-weight: 500; color: #1f2937; }
+.prezzo { font-weight: 500; color: #4b5563; }
 

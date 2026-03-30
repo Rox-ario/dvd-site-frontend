@@ -1,0 +1,41 @@
+<div class="checkout-wrapper">
+  <div class="checkout-card">
+    <header>
+      <h1>Conferma Acquisto</h1>
+      <p *ngIf="!successMessage">Un ultimo passo prima della visione.</p>
+    </header>
+
+    <div class="alert alert-success" *ngIf="successMessage">
+      {{ successMessage }}
+      <p class="small-text">Reindirizzamento allo storico ordini in corso...</p>
+    </div>
+
+    <div class="alert alert-danger" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <ng-container *ngIf="!successMessage">
+      <div class="summary-box">
+        <div class="summary-row" *ngFor="let item of cartService.cartItems$ | async">
+          <span class="item-name"><span class="qty">{{ item.quantita }}x</span> {{ item.film.titolo }}</span>
+          <span class="item-price">{{ (item.film.prezzo * item.quantita) | currency:'EUR':'symbol':'1.2-2' }}</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="summary-row total-row">
+          <span>Totale da addebitare:</span>
+          <span>{{ cartService.calcolaTotale((cartService.cartItems$ | async) || []) | currency:'EUR':'symbol':'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-outline" routerLink="/carrello" [disabled]="isLoading">Modifica Carrello</button>
+        <button class="btn-primary" (click)="confermaOrdine()" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Paga Ora</span>
+          <span *ngIf="isLoading">Transazione in corso...</span>
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

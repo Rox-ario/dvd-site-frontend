@@ -55,6 +55,12 @@ export const routes: Routes = [
     ]
   },
 
+  {
+    path: 'checkout',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/store/checkout/checkout').then(m => m.CheckoutComponent)
+  },
+
   // 4. AREA ADMIN (Dashboard Gestionale)
   // Altamente protetta: devi essere loggato E avere il ruolo ADMIN
   {

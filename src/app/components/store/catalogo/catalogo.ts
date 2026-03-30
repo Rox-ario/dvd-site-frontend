@@ -4,7 +4,9 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Observable, debounceTime, distinctUntilChanged, startWith, switchMap, catchError, of } from 'rxjs';
 import { FilmService } from '../../../services/film';
-import { CartService } from '../../../services/cart'; // <-- Nuovo import
+import { CartService } from '../../../services/cart';
+import { ClienteService } from '../../../services/cliente'; // Aggiunto per i preferiti
+import { AuthService } from '../../../services/auth';       // Aggiunto per verificare se è loggato
 import { FilmResponse } from '../../../models/film.model';
 
 @Component({
@@ -19,15 +21,35 @@ export class CatalogoComponent implements OnInit {
   film$!: Observable<FilmResponse[]>;
   errorMessage = '';
 
-  // Set reattivo per tenere traccia dei film appena aggiunti (per il feedback visivo)
+  // Set reattivo per tenere traccia dei film appena aggiunti al carrello (per il feedback visivo)
   aggiuntiDiRecente = new Set<number>();
+
+  // Nuove variabili per la gestione dei preferiti
+  preferitiIds = new Set<number>();
+  isLoggedIn = false;
 
   constructor(
     private filmService: FilmService,
-    private cartService: CartService // <-- Iniettato nel costruttore
+    private cartService: CartService,
+    private clienteService: ClienteService, // Iniettato
+    private authService: AuthService        // Iniettato
   ) {}
 
   ngOnInit(): void {
+    // 1. Controlliamo se l'utente è loggato e, se sì, recuperiamo i suoi preferiti
+    this.isLoggedIn = this.authService.isLoggedIn();
+
+    if (this.isLoggedIn) {
+      this.clienteService.ottieniDettaglioPreferiti().subscribe({
+        next: (film) => {
+          // Inseriamo gli ID nel Set per colorare immediatamente i cuoricini corretti
+          film.forEach(f => this.preferitiIds.add(f.idFilm));
+        },
+        error: () => console.error('Impossibile caricare i preferiti in background.')
+      });
+    }
+
+    // 2. Logica di ricerca reattiva del catalogo
     this.film$ = this.searchControl.valueChanges.pipe(
       startWith(''),
       debounceTime(300),
@@ -44,17 +66,37 @@ export class CatalogoComponent implements OnInit {
     );
   }
 
-  // Nuova funzione per gestire il click
+  // Funzione per il carrello
   aggiungiAlCarrello(film: FilmResponse): void {
-    // 1. Inviamo i dati al motore di stato globale
     this.cartService.aggiungiAlCarrello(film);
 
-    // 2. Feedback visivo locale: inseriamo l'ID nel Set
+    // Feedback visivo
     this.aggiuntiDiRecente.add(film.idFilm);
-
-    // 3. Rimuoviamo il feedback dopo 2 secondi
     setTimeout(() => {
       this.aggiuntiDiRecente.delete(film.idFilm);
     }, 2000);
+  }
+
+  // Nuova funzione per gestire il click sul cuoricino
+  togglePreferito(film: FilmResponse): void {
+    if (!this.isLoggedIn) {
+      alert("Devi effettuare l'accesso per aggiungere film ai preferiti!");
+      return;
+    }
+
+    // Se il film è già nel Set dei preferiti, chiamiamo l'endpoint di rimozione
+    if (this.preferitiIds.has(film.idFilm)) {
+      this.clienteService.rimuoviPreferito(film.idFilm).subscribe({
+        next: () => this.preferitiIds.delete(film.idFilm),
+        error: () => alert("Errore durante la rimozione dai preferiti.")
+      });
+    }
+    // Altrimenti, chiamiamo l'endpoint di aggiunta
+    else {
+      this.clienteService.aggiungiPreferito(film.idFilm).subscribe({
+        next: () => this.preferitiIds.add(film.idFilm),
+        error: () => alert("Errore durante l'aggiunta ai preferiti.")
+      });
+    }
   }
 }

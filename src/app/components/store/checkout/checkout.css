@@ -1,0 +1,133 @@
+.checkout-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px); /* Sottrai approssimativamente l'altezza della navbar */
+  background-color: #f3f4f6;
+  padding: 2rem 1rem;
+}
+
+.checkout-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 500px;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+header h1 {
+  margin: 0 0 0.5rem 0;
+  color: #1f2937;
+  font-size: 1.8rem;
+}
+
+header p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.summary-box {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  color: #4b5563;
+}
+
+.summary-row:last-of-type {
+  margin-bottom: 0;
+}
+
+.qty {
+  font-weight: 600;
+  color: #2563eb;
+  margin-right: 0.5rem;
+}
+
+.item-name {
+  flex: 1;
+  padding-right: 1rem;
+}
+
+.item-price {
+  font-weight: 500;
+}
+
+.divider {
+  height: 1px;
+  background-color: #d1d5db;
+  margin: 1.25rem 0;
+}
+
+.total-row {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #111827;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-primary, .btn-outline {
+  flex: 1;
+  padding: 0.85rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.alert-success { background-color: #d1fae5; color: #059669; border: 1px solid #34d399; }
+.alert-danger { background-color: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
+.small-text { font-size: 0.85rem; margin-top: 0.5rem; }

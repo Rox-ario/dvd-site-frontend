@@ -67,13 +67,16 @@
       <section class="favorites-card">
         <h2>I tuoi Preferiti</h2>
 
-        <div class="empty-state" *ngIf="profilo.filmPreferiti.length === 0">
+        <div class="empty-state" *ngIf="preferitiDettagliati.length === 0">
           Non hai ancora aggiunto film ai preferiti. Esplora il catalogo!
         </div>
 
-        <ul class="favorites-list" *ngIf="profilo.filmPreferiti.length > 0">
-          <li *ngFor="let titolo of profilo.filmPreferiti">
-            <span class="movie-icon">🎬</span> {{ titolo }}
+        <ul class="favorites-list" *ngIf="preferitiDettagliati.length > 0">
+          <li *ngFor="let film of preferitiDettagliati" class="favorite-item">
+            <span class="movie-title">{{ film.titolo }}</span>
+            <button class="btn-text text-danger" (click)="rimuoviDaPreferiti(film.idFilm)" title="Rimuovi">
+              ✕
+            </button>
           </li>
         </ul>
       </section>

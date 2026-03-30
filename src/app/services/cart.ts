@@ -65,13 +65,14 @@ export class CartService {
   }
 
   // Prepara i dati esattamente come li vuole il tuo OrdineController Java
-  generaPayloadOrdine(idCliente: number): CreaOrdineRequest {
+  generaPayloadOrdine(): CreaOrdineRequest {
     const articoli: RigaOrdineRequest[] = this.cartItemsSubject.value.map(item => ({
       idFilm: item.film.idFilm,
       quantita: item.quantita
     }));
 
-    return { idCliente, articoli };
+    // Il DTO CreaOrdineRequest in app/models/auth.model.ts aspetta solo 'articoli'
+    return { articoli };
   }
 
   // Sincronizza il Subject e il LocalStorage in un colpo solo

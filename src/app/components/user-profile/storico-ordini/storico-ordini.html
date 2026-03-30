@@ -1,5 +1,43 @@
 <div class="storico-container">
-  <h1>Storico Ordini</h1>
-  <!-- TODO: Mostrare lista ordini -->
+  <div class="header-actions">
+    <h1>I Miei Ordini</h1>
+    <a routerLink="/profilo" class="btn-outline">Torna al Profilo</a>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loader" *ngIf="isLoading">Caricamento storico in corso...</div>
+
+  <div class="empty-state" *ngIf="!isLoading && ordini.length === 0 && !errorMessage">
+    <p>Non hai ancora effettuato nessun ordine. 🍿</p>
+    <a routerLink="/catalogo" class="btn-primary">Vai al Catalogo</a>
+  </div>
+
+  <div class="ordini-list" *ngIf="ordini.length > 0">
+    <article class="ordine-card" *ngFor="let ordine of ordini">
+      <div class="ordine-header">
+        <div class="ordine-info">
+          <h3>Ordine #{{ ordine.numeroOrdine }}</h3>
+          <span class="data">{{ ordine.dataAcquisto | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="ordine-status">
+          <span class="badge" [ngClass]="ordine.stato.toLowerCase()">
+            {{ ordine.stato.replace('_', ' ') }}
+          </span>
+          <span class="totale">{{ ordine.totale | currency:'EUR':'symbol':'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="ordine-body">
+        <h4>Articoli Acquistati:</h4>
+        <ul class="articoli-list">
+          <li *ngFor="let riga of ordine.righe">
+            <span class="qty">{{ riga.quantita }}x</span>
+            <span class="titolo">{{ riga.titoloFilm }}</span>
+            <span class="prezzo">{{ riga.prezzoAcquisto | currency:'EUR':'symbol':'1.2-2' }}</span>
+          </li>
+        </ul>
+      </div>
+    </article>
+  </div>
 </div>
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ClienteService } from '../../../services/cliente';
 import { ClienteProfileResponse } from '../../../models/cliente.model';
+import { FilmResponse } from '../../../models/film.model';
 
 @Component({
   selector: 'app-dashboard-cliente',
@@ -13,7 +14,7 @@ import { ClienteProfileResponse } from '../../../models/cliente.model';
 })
 export class DashboardClienteComponent implements OnInit {
   profilo: ClienteProfileResponse | null = null;
-
+  preferitiDettagliati: FilmResponse[] = [];
   isEditing = false;
   editForm: FormGroup;
   isLoading = false;
@@ -32,23 +33,30 @@ export class DashboardClienteComponent implements OnInit {
   ngOnInit(): void {
     this.caricaProfilo();
   }
-
   caricaProfilo() {
     this.isLoading = true;
 
-    // 👇 La chiamata ora è pulita e priva di parametri
+    // Carichiamo l'anagrafica
     this.clienteService.ottieniProfilo().subscribe({
       next: (dati) => {
         this.profilo = dati;
-        this.editForm.patchValue({
-          nome: dati.nome,
-          cognome: dati.cognome
-        });
+        this.editForm.patchValue({ nome: dati.nome, cognome: dati.cognome });
         this.isLoading = false;
       },
-      error: () => {
-        this.errorMessage = 'Impossibile caricare i dati del profilo.';
-        this.isLoading = false;
+      error: () => { this.errorMessage = 'Errore profilo'; this.isLoading = false; }
+    });
+
+    // Carichiamo i dettagli dei preferiti in parallelo
+    this.clienteService.ottieniDettaglioPreferiti().subscribe({
+      next: (film) => this.preferitiDettagliati = film
+    });
+  }
+
+  rimuoviDaPreferiti(idFilm: number) {
+    this.clienteService.rimuoviPreferito(idFilm).subscribe({
+      next: () => {
+        // Rimuoviamo l'elemento localmente senza dover ricaricare tutto dal server
+        this.preferitiDettagliati = this.preferitiDettagliati.filter(f => f.idFilm !== idFilm);
       }
     });
   }

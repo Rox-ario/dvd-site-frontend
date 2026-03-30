@@ -26,8 +26,8 @@ export interface RigaOrdineRequest {
   quantita: number;
 }
 
-export interface CreaOrdineRequest {
-  idCliente: number;
+export interface CreaOrdineRequest
+{
   articoli: RigaOrdineRequest[];
 }
 
