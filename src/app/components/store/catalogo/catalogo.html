@@ -40,7 +40,7 @@
         <div class="card-content">
           <div class="movie-meta">
             <span class="anno">{{ film.anno }}</span>
-            <span class="generi" *ngIf="film.genere?.length">{{ film.genere[0] }}</span>
+            <span class="generi" *ngIf="film.genere && film.genere.length">{{ film.genere[0] }}</span>
           </div>
 
           <h3 class="movie-title">{{ film.titolo }}</h3>

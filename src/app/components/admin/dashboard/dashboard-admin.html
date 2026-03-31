@@ -1,5 +1,77 @@
 <div class="admin-dashboard-container">
-  <h1>Dashboard Admin</h1>
-  <!-- TODO: Mostrare statistiche e controlli admin -->
+  <header class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h1>Pannello di Controllo</h1>
+      <p>Panoramica finanziaria e logistica del negozio.</p>
+    </div>
+    <a routerLink="/admin/gestione-film" class="btn-primary" style="text-decoration: none;">Gestione Catalogo Film</a>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Totale Incassato</h3>
+      <p class="stat-value text-success">{{ totaleIncassato | currency:'EUR':'symbol':'1.2-2' }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>Volumi di Vendita</h3>
+      <p class="stat-value">{{ ordini.length }} <span class="small-text">Ordini Totali</span></p>
+    </div>
+    <div class="stat-card alert-card" [class.active]="ordiniDaSpedire > 0">
+      <h3>In Attesa di Spedizione</h3>
+      <p class="stat-value">{{ ordiniDaSpedire }}</p>
+    </div>
+  </div>
+
+  <div class="filters-section">
+    <label for="filtroStato">Filtra la vista:</label>
+    <select id="filtroStato" [(ngModel)]="statoSelezionato" (change)="applicaFiltro()">
+      <option value="">Mostra Tutti</option>
+      <option *ngFor="let stato of statiDisponibili" [value]="stato">{{ stato.replace('_', ' ') }}</option>
+    </select>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loader" *ngIf="isLoading">Sincronizzazione dati in corso...</div>
+
+  <div class="table-container" *ngIf="!isLoading && ordini.length > 0">
+    <table class="admin-table">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Data Acq.</th>
+        <th>Articoli</th>
+        <th>Incasso</th>
+        <th>Stato Spedizione</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let ordine of ordiniFiltrati">
+        <td class="fw-bold">#{{ ordine.numeroOrdine }}</td>
+        <td>{{ ordine.dataAcquisto | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>
+          <ul class="articoli-mini">
+            <li *ngFor="let r of ordine.righe">{{ r.quantita }}x {{ r.titoloFilm }}</li>
+          </ul>
+        </td>
+        <td class="fw-bold">{{ ordine.totale | currency:'EUR':'symbol':'1.2-2' }}</td>
+        <td>
+          <select
+            class="status-select"
+            [ngClass]="ordine.stato.toLowerCase()"
+            [value]="ordine.stato"
+            (change)="cambiaStato(ordine.numeroOrdine, $event)">
+            <option *ngFor="let stato of statiDisponibili" [value]="stato">
+              {{ stato.replace('_', ' ') }}
+            </option>
+          </select>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && ordini.length === 0">
+    <p>Il registro è vuoto. Nessuna transazione registrata.</p>
+  </div>
 </div>
 

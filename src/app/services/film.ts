@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { FilmResponse } from '../models/film.model';
+import { CreaFilmRequest } from '../models/film.model';
 
 @Injectable({
   providedIn: 'root'
@@ -27,5 +28,17 @@ export class FilmService {
 
   ottieniDettaglio(id: number): Observable<FilmResponse> {
     return this.http.get<FilmResponse>(`${this.API_URL}/${id}`);
+  }
+
+  creaFilm(dati: CreaFilmRequest): Observable<FilmResponse> {
+    return this.http.post<FilmResponse>(this.API_URL, dati);
+  }
+
+  aggiornaFilm(id: number, dati: CreaFilmRequest): Observable<FilmResponse> {
+    return this.http.put<FilmResponse>(`${this.API_URL}/${id}`, dati);
+  }
+
+  eliminaFilm(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CreaOrdineRequest } from '../models/auth.model';
 import { OrdineResponse } from '../models/ordine.model';
@@ -18,5 +18,19 @@ export class OrdineService {
 
   ottieniMioStorico(): Observable<OrdineResponse[]> {
     return this.http.get<OrdineResponse[]>(`${this.API_URL}/me/storico`);
+  }
+
+  ottieniTuttiGliOrdini(stato?: string): Observable<OrdineResponse[]> {
+    let params = new HttpParams();
+    if (stato) {
+      params = params.set('stato', stato);
+    }
+    // Chiama l'endpoint globale protetto
+    return this.http.get<OrdineResponse[]>(`${this.API_URL}/admin/tutti`, { params });
+  }
+
+  aggiornaStatoOrdine(idOrdine: number, nuovoStato: string): Observable<OrdineResponse> {
+    const params = new HttpParams().set('nuovoStato', nuovoStato);
+    return this.http.patch<OrdineResponse>(`${this.API_URL}/${idOrdine}/stato`, null, { params });
   }
 }
