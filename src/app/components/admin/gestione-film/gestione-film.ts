@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { FilmService } from '../../../services/film';
 import { AdminCatalogoService } from '../../../services/admin-catalogo.service';
 import { FilmResponse, CreaFilmRequest } from '../../../models/film.model';
@@ -9,7 +9,7 @@ import { Genere, Attore, Regista } from '../../../models/catalogo.model';
 @Component({
   selector: 'app-gestione-film',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './gestione-film.html',
   styleUrls: ['./gestione-film.css']
 })
@@ -123,6 +123,131 @@ export class GestioneFilmComponent implements OnInit {
   eliminaFilm(id: number, titolo: string) {
     if (confirm(`Sei sicuro di voler disattivare il film "${titolo}"?`)) {
       this.filmService.eliminaFilm(id).subscribe(() => this.caricaFilm());
+    }
+  }
+
+  // Stato per la creazione rapida
+  creazioneRapida = {
+    attiva: false,
+    tipo: '' as 'genere' | 'regista' | 'attore',
+    nome: '',
+    cognome: ''
+  };
+
+  avviaCreazioneRapida(tipo: 'genere' | 'regista' | 'attore') {
+    this.creazioneRapida = { attiva: true, tipo, nome: '', cognome: '' };
+  }
+
+  annullaCreazioneRapida() {
+    this.creazioneRapida.attiva = false;
+  }
+
+  salvaEntitaRapida() {
+    const { tipo, nome, cognome } = this.creazioneRapida;
+    if (!nome.trim()) return;
+
+    if (tipo === 'genere') {
+      this.adminCatalogoService.creaGenere({ nome: nome.trim() }).subscribe(nuovo => {
+        this.generi = [...this.generi, nuovo]; // Aggiorna elenco dropdown
+        const attuali = this.filmForm.value.idGeneri || [];
+        this.filmForm.patchValue({ idGeneri: [...attuali, nuovo.id] }); // Auto-seleziona
+        this.annullaCreazioneRapida();
+      });
+    } else if (tipo === 'regista') {
+      this.adminCatalogoService.creaRegista({ nome: nome.trim(), cognome: cognome.trim() }).subscribe(nuovo => {
+        this.registi = [...this.registi, nuovo];
+        const attuali = this.filmForm.value.idRegisti || [];
+        this.filmForm.patchValue({ idRegisti: [...attuali, nuovo.id] });
+        this.annullaCreazioneRapida();
+      });
+    } else if (tipo === 'attore') {
+      this.adminCatalogoService.creaAttore({ nome: nome.trim(), cognome: cognome.trim() }).subscribe(nuovo => {
+        this.attori = [...this.attori, nuovo];
+        const attuali = this.filmForm.value.idAttori || [];
+        this.filmForm.patchValue({ idAttori: [...attuali, nuovo.id] });
+        this.annullaCreazioneRapida();
+      });
+    }
+  }
+
+  // Helper: controlla se un ID è già presente nel valore attuale del form
+  isItemSelected(controlName: string, id: number): boolean {
+    const currentValues = this.filmForm.get(controlName)?.value || [];
+    return currentValues.includes(id);
+  }
+
+  // Azione al click sulla riga: aggiunge o rimuove l'ID dall'array del form
+  toggleSelection(controlName: string, id: number) {
+    const control = this.filmForm.get(controlName);
+    if (!control) return;
+
+    const currentValues = [...(control.value || [])];
+    const index = currentValues.indexOf(id);
+
+    if (index > -1) {
+      // Già presente, rimuovilo
+      currentValues.splice(index, 1);
+    } else {
+      // Non presente, aggiungilo
+      currentValues.push(id);
+    }
+
+    // Aggiorna il form patchando il valore
+    control.setValue(currentValues);
+    control.markAsDirty(); // Segnala che il form è stato modificato
+  }
+
+  eliminaGenere(id: number, nome: string, event: Event) {
+    event.stopPropagation(); // BLOCCA il click sulla riga sottostante
+
+    if (!confirm(`Sei sicuro di voler eliminare DEFINITIVAMENTE il genere '${nome}' dal database? Questa azione non può essere annullata.`)) {
+      return;
+    }
+
+    this.adminCatalogoService.eliminaGenere(id).subscribe({
+      next: () => {
+        // 1. Rimuovi dall'elenco locale per aggiornare la lista
+        this.generi = this.generi.filter(g => g.id !== id);
+        // 2. Rimuovi dalla selezione nel form se era selezionato
+        this.pulisciSelezioneSeEliminato('idGeneri', id);
+      },
+      error: (err) => alert("Errore durante l'eliminazione. Potrebbe essere utilizzato da alcuni film.")
+    });
+  }
+
+  eliminaRegista(id: number, nome: string, cognome: string, event: Event) {
+    event.stopPropagation();
+    if (!confirm(`Sei sicuro di voler eliminare DEFINITIVAMENTE il regista '${nome} ${cognome}'?`)) return;
+
+    this.adminCatalogoService.eliminaRegista(id).subscribe({
+      next: () => {
+        this.registi = this.registi.filter(r => r.id !== id);
+        this.pulisciSelezioneSeEliminato('idRegisti', id);
+      },
+      error: () => alert("Impossibile eliminare.")
+    });
+  }
+
+  eliminaAttore(id: number, nome: string, cognome: string, event: Event) {
+    event.stopPropagation();
+    if (!confirm(`Sei sicuro di voler eliminare DEFINITIVAMENTE l'attore '${nome} ${cognome}'?`)) return;
+
+    this.adminCatalogoService.eliminaAttore(id).subscribe({
+      next: () => {
+        this.attori = this.attori.filter(a => a.id !== id);
+        this.pulisciSelezioneSeEliminato('idAttori', id);
+      },
+      error: () => alert("Impossibile eliminare.")
+    });
+  }
+
+  // Helper per rimuovere l'ID dal form se l'entità è stata cancellata dal db
+  private pulisciSelezioneSeEliminato(controlName: string, idEliminato: number) {
+    const control = this.filmForm.get(controlName);
+    if (!control) return;
+    const current = control.value || [];
+    if (current.includes(idEliminato)) {
+      control.setValue(current.filter((id: number) => id !== idEliminato));
     }
   }
 }

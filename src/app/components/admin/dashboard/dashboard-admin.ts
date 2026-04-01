@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrdineService } from '../../../services/ordine.service';
@@ -25,7 +25,10 @@ export class DashboardAdminComponent implements OnInit {
   statoSelezionato = '';
   statiDisponibili = ['IN_ELABORAZIONE', 'SPEDITO', 'CONSEGNATO', 'ANNULLATO'];
 
-  constructor(private ordineService: OrdineService) {}
+  constructor(
+    private ordineService: OrdineService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.caricaOrdini();
@@ -35,14 +38,19 @@ export class DashboardAdminComponent implements OnInit {
     this.isLoading = true;
     this.ordineService.ottieniTuttiGliOrdini().subscribe({
       next: (dati) => {
-        this.ordini = dati;
+        this.ordini = Array.isArray(dati) ? dati : [];
+        this.ordini.forEach(o => o.stato = o.stato || 'IN_ELABORAZIONE');
+
         this.applicaFiltro();
         this.calcolaStatistiche();
         this.isLoading = false;
+
+        this.cdr.detectChanges();
       },
       error: () => {
         this.errorMessage = 'Impossibile caricare il registro degli ordini dal server.';
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

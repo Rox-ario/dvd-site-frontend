@@ -33,6 +33,10 @@ export class AdminCatalogoService {
     return this.http.post<Attore>(`${this.API_BASE}/attori`, dati);
   }
 
+  eliminaAttore(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_BASE}/attori/${id}`);
+  }
+
   // --- REGISTI ---
   ottieniRegisti(): Observable<Regista[]> {
     return this.http.get<Regista[]>(`${this.API_BASE}/registi`);

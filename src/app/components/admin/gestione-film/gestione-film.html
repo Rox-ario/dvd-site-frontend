@@ -82,35 +82,90 @@
           <textarea formControlName="trama" rows="4"></textarea>
         </div>
 
-        <div class="form-group">
-          <label>Generi (Ctrl+Click per multipli)</label>
-          <select multiple formControlName="idGeneri" class="multi-select">
-            <option *ngFor="let g of generi" [value]="g.id">{{ g.nome }}</option>
-          </select>
+        <div class="inline-creation-box span-2" *ngIf="creazioneRapida.attiva">
+          <h4>Nuovo {{ creazioneRapida.tipo | titlecase }}</h4>
+          <div class="inline-inputs">
+            <input type="text" placeholder="Nome" [(ngModel)]="creazioneRapida.nome" [ngModelOptions]="{standalone: true}">
+            <input *ngIf="creazioneRapida.tipo !== 'genere'" type="text" placeholder="Cognome" [(ngModel)]="creazioneRapida.cognome" [ngModelOptions]="{standalone: true}">
+          </div>
+          <div class="inline-actions">
+            <button type="button" class="btn-small outline" (click)="annullaCreazioneRapida()">Annulla</button>
+            <button type="button" class="btn-small btn-primary" (click)="salvaEntitaRapida()" [disabled]="!creazioneRapida.nome">Salva e Aggiungi</button>
+          </div>
         </div>
 
         <div class="form-group">
-          <label>Registi</label>
-          <select multiple formControlName="idRegisti" class="multi-select">
-            <option *ngFor="let r of registi" [value]="r.id">{{ r.nome }} {{ r.cognome }}</option>
-          </select>
+          <div class="label-with-action">
+            <label>Generi</label>
+            <button type="button" class="btn-action-small" (click)="avviaCreazioneRapida('genere')" title="Aggiungi nuovo Genere al database">
+              <span>+</span> Nuovo
+            </button>
+          </div>
+
+          <div class="custom-multi-select-list">
+            <div class="list-item" *ngFor="let g of generi" (click)="toggleSelection('idGeneri', g.id)">
+              <div class="item-content">
+                <input type="checkbox" [checked]="isItemSelected('idGeneri', g.id)" (click)="$event.stopPropagation(); toggleSelection('idGeneri', g.id)">
+                <span class="item-label">{{ g.nome }}</span>
+              </div>
+              <button type="button" class="btn-delete-item" (click)="eliminaGenere(g.id, g.nome, $event)" title="Elimina permanentemente questo Genere">
+                &times;
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-action">
+            <label>Registi</label>
+            <button type="button" class="btn-action-small" (click)="avviaCreazioneRapida('regista')" title="Aggiungi nuovo Regista">
+              <span>+</span> Nuovo
+            </button>
+          </div>
+
+          <div class="custom-multi-select-list">
+            <div class="list-item" *ngFor="let r of registi" (click)="toggleSelection('idRegisti', r.id)">
+              <div class="item-content">
+                <input type="checkbox" [checked]="isItemSelected('idRegisti', r.id)" (click)="$event.stopPropagation(); toggleSelection('idRegisti', r.id)">
+                <span class="item-label">{{ r.cognome }} {{ r.nome }}</span>
+              </div>
+              <button type="button" class="btn-delete-item" (click)="eliminaRegista(r.id, r.nome, r.cognome, $event)" title="Elimina permanentemente">
+                &times;
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="form-group span-2">
-          <label>Attori</label>
-          <select multiple formControlName="idAttori" class="multi-select">
-            <option *ngFor="let a of attori" [value]="a.id">{{ a.nome }} {{ a.cognome }}</option>
-          </select>
-        </div>
-      </div>
+          <div class="label-with-action">
+            <label>Attori Principali</label>
+            <button type="button" class="btn-action-small" (click)="avviaCreazioneRapida('attore')" title="Aggiungi nuovo Attore">
+              <span>+</span> Nuovo
+            </button>
+          </div>
 
+          <div class="custom-multi-select-list">
+            <div class="list-item" *ngFor="let a of attori" (click)="toggleSelection('idAttori', a.id)">
+              <div class="item-content">
+                <input type="checkbox" [checked]="isItemSelected('idAttori', a.id)" (click)="$event.stopPropagation(); toggleSelection('idAttori', a.id)">
+                <span class="item-label">{{ a.cognome }} {{ a.nome }}</span>
+              </div>
+              <button type="button" class="btn-delete-item" (click)="eliminaAttore(a.id, a.nome, a.cognome, $event)" title="Elimina permanentemente">
+                &times;
+              </button>
+            </div>
+          </div>
+        </div>
       <div class="form-actions mt-4">
         <button type="button" class="btn-outline" (click)="annulla()" [disabled]="isLoading">Annulla</button>
         <button type="submit" class="btn-primary" [disabled]="filmForm.invalid || isLoading">
           {{ isLoading ? 'Salvataggio...' : 'Salva Film' }}
         </button>
       </div>
+
+      </div>
     </form>
   </div>
+
 </div>
 
