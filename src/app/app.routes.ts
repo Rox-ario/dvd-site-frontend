@@ -26,14 +26,15 @@ export const routes: Routes = [
   // Accessibili a tutti (o con un layout specifico per lo store)
   {
     path: '',
-    // Qui in futuro potremmo mettere un componente LayoutStore (con la navbar pubblica)
-    // loadComponent: () => import('./components/layout/store-layout.component').then(...)
     children: [
       {
         path: 'catalogo',
         loadComponent: () => import('./components/store/catalogo/catalogo').then(m => m.CatalogoComponent)
       },
-      // ... altre rotte pubbliche come dettaglio film
+      {
+        path: 'dettaglio/:id',
+        loadComponent: () => import('./components/store/dettaglio-film/dettaglio-film').then(m => m.DettaglioFilmComponent)
+      },
       { path: '', redirectTo: 'catalogo', pathMatch: 'full' }
     ]
   },

@@ -1,171 +1,190 @@
-<div class="gestione-film-container">
+<div class="main-container">
 
-  <header class="admin-header">
-    <h1>Gestione Catalogo Film</h1>
-    <button class="btn-primary" (click)="apriFormCreazione()" *ngIf="!mostraForm">
-      + Aggiungi Nuovo Film
+  <div class="admin-header">
+    <h2>
+      Catalogo DVD
+    </h2>
+    <button type="button" class="btn-modern btn-primary" (click)="apriFormCreazione()">
+      <span>+</span> Aggiungi Nuovo DVD
     </button>
-  </header>
-
-  <div class="table-container" *ngIf="!mostraForm">
-    <table class="admin-table">
-      <thead>
-      <tr>
-        <th>ID</th>
-        <th>Titolo</th>
-        <th>Prezzo</th>
-        <th>Stock</th>
-        <th>Stato</th>
-        <th>Azioni</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let film of filmList" [class.disabled-row]="!film.isAttivo">
-        <td>{{ film.idFilm }}</td>
-        <td class="fw-bold">{{ film.titolo }} <span class="badge-anno">{{ film.anno }}</span></td>
-        <td>{{ film.prezzo | currency:'EUR':'symbol':'1.2-2' }}</td>
-        <td>
-          <span [class.text-danger]="film.stock === 0">{{ film.stock }} pz.</span>
-        </td>
-        <td>
-            <span class="status-badge" [class.attivo]="film.isAttivo" [class.disattivo]="!film.isAttivo">
-              {{ film.isAttivo ? 'In Vendita' : 'Disattivato' }}
-            </span>
-        </td>
-        <td class="actions-cell">
-          <button class="btn-icon text-primary" (click)="apriFormModifica(film)">✎</button>
-          <button class="btn-icon text-danger" *ngIf="film.isAttivo" (click)="eliminaFilm(film.idFilm, film.titolo)">🗑️</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
   </div>
 
-  <div class="form-container card" *ngIf="mostraForm">
-    <h2>{{ filmInModificaId ? 'Modifica Film' : 'Nuovo Film' }}</h2>
+  <div class="filters-bar">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Cerca per titolo, regista o attore..."
+      (keyup)="caricaFilm()"
+    >
+    <select class="filter-select">
+      <option value="">Tutti i generi</option>
+      <option *ngFor="let g of generi" [value]="g.id">{{ g.nome }}</option>
+    </select>
+  </div>
 
-    <form [formGroup]="filmForm" (ngSubmit)="salvaFilm()">
 
-      <div class="form-grid">
-        <div class="form-group span-2">
-          <label>Titolo</label>
-          <input type="text" formControlName="titolo">
+  <div *ngIf="isLoading" class="global-loader">
+    <div class="loading-infinite">Sincronizzazione catalogo in corso...</div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner">
+    {{ errorMessage }}
+  </div>
+
+
+  <div *ngIf="!mostraForm && !isLoading" class="film-list-container">
+
+    <div *ngIf="filmList.length === 0" class="global-loader">
+      Nessun DVD trovato nel catalogo.
+    </div>
+
+    <div *ngFor="let f of filmList" class="film-item-row">
+
+      <div class="film-cover-area">
+        <span>📀</span>
+      </div>
+
+      <div class="film-info-main">
+        <span class="film-title-display">{{ f.titolo }}</span>
+        <p class="film-meta-subtitle">
+          {{ f.registi[0] || 'Regista Sconosciuto' }} • {{ f.anno }}
+        </p>
+      </div>
+
+      <div class="film-badges-area">
+        <span *ngFor="let g of f.genere | slice:0:2" class="badge-genre">
+          {{ g }}
+        </span>
+      </div>
+
+      <div class="film-status-area">
+        <span class="status-pill" [ngClass]="f.stock > 0 ? 'available' : 'out-of-stock'">
+          <span>●</span> {{ f.stock > 0 ? 'Disponibile' : 'Esaurito' }}
+        </span>
+      </div>
+
+      <div class="film-price-area">
+        € {{ f.prezzo | number:'1.2-2' }}
+      </div>
+
+      <div class="film-actions-area">
+        <button type="button" class="btn-icon edit" (click)="apriFormModifica(f)" title="Modifica">
+          <span>✏️</span>
+        </button>
+        <button type="button" class="btn-icon delete" (click)="eliminaFilm(f.idFilm, f.titolo)" title="Elimina">
+          <span>🗑️</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <div *ngIf="mostraForm" class="form-section">
+    <div class="admin-header">
+      <h3>{{ filmInModificaId ? 'Modifica DVD: ' + filmForm.value.titolo : 'Aggiungi Nuovo DVD' }}</h3>
+      <button type="button" class="btn-modern btn-secondary" (click)="annullaForm()">
+        Annulla
+      </button>
+    </div>
+
+    <form [formGroup]="filmForm" (ngSubmit)="salvaFilm()" class="form-grid">
+
+      <div class="form-group span-2">
+        <label>Titolo</label>
+        <input type="text" formControlName="titolo" class="form-input" placeholder="Es. Il Gladiatore">
+      </div>
+
+      <div class="form-group span-2">
+        <label>Trama</label>
+        <textarea formControlName="trama" class="form-input" rows="4"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Anno</label>
+        <input type="number" formControlName="anno" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label>Durata (Minuti)</label>
+        <input type="number" formControlName="durataMinuti" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label>Prezzo (€)</label>
+        <input type="number" formControlName="prezzo" step="0.01" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label>Stock in Magazzino</label>
+        <input type="number" formControlName="stock" class="form-input">
+      </div>
+
+      <div class="form-group span-2">
+        <label>URL Locandina</label>
+        <input type="text" formControlName="urlImmagine" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <div class="label-with-action">
+          <label>Generi</label>
+          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('genere')" title="Crea">
+            + Nuovo
+          </button>
         </div>
-
-        <div class="form-group">
-          <label>Anno</label>
-          <input type="number" formControlName="anno">
-        </div>
-
-        <div class="form-group">
-          <label>Durata (min)</label>
-          <input type="number" formControlName="durataMinuti">
-        </div>
-
-        <div class="form-group">
-          <label>Prezzo (€)</label>
-          <input type="number" step="0.01" formControlName="prezzo">
-        </div>
-
-        <div class="form-group">
-          <label>Stock Dispo.</label>
-          <input type="number" formControlName="stock">
-        </div>
-
-        <div class="form-group span-2">
-          <label>URL Immagine</label>
-          <input type="text" formControlName="urlImmagine" placeholder="https://...">
-        </div>
-
-        <div class="form-group span-2">
-          <label>Trama</label>
-          <textarea formControlName="trama" rows="4"></textarea>
-        </div>
-
-        <div class="inline-creation-box span-2" *ngIf="creazioneRapida.attiva">
-          <h4>Nuovo {{ creazioneRapida.tipo | titlecase }}</h4>
-          <div class="inline-inputs">
-            <input type="text" placeholder="Nome" [(ngModel)]="creazioneRapida.nome" [ngModelOptions]="{standalone: true}">
-            <input *ngIf="creazioneRapida.tipo !== 'genere'" type="text" placeholder="Cognome" [(ngModel)]="creazioneRapida.cognome" [ngModelOptions]="{standalone: true}">
-          </div>
-          <div class="inline-actions">
-            <button type="button" class="btn-small outline" (click)="annullaCreazioneRapida()">Annulla</button>
-            <button type="button" class="btn-small btn-primary" (click)="salvaEntitaRapida()" [disabled]="!creazioneRapida.nome">Salva e Aggiungi</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="label-with-action">
-            <label>Generi</label>
-            <button type="button" class="btn-action-small" (click)="avviaCreazioneRapida('genere')" title="Aggiungi nuovo Genere al database">
-              <span>+</span> Nuovo
-            </button>
-          </div>
-
-          <div class="custom-multi-select-list">
-            <div class="list-item" *ngFor="let g of generi" (click)="toggleSelection('idGeneri', g.id)">
-              <div class="item-content">
-                <input type="checkbox" [checked]="isItemSelected('idGeneri', g.id)" (click)="$event.stopPropagation(); toggleSelection('idGeneri', g.id)">
-                <span class="item-label">{{ g.nome }}</span>
-              </div>
-              <button type="button" class="btn-delete-item" (click)="eliminaGenere(g.id, g.nome, $event)" title="Elimina permanentemente questo Genere">
-                &times;
-              </button>
+        <div class="custom-multi-select-list">
+          <div class="list-item" *ngFor="let g of generi" (click)="toggleSelection('idGeneri', g.id)">
+            <div class="item-content">
+              <input type="checkbox" [checked]="isItemSelected('idGeneri', g.id)" (click)="$event.stopPropagation(); toggleSelection('idGeneri', g.id)">
+              <span>{{ g.nome }}</span>
             </div>
+            <button type="button" class="btn-delete-item" (click)="eliminaGenere(g.id, g.nome, $event)">&times;</button>
           </div>
         </div>
+      </div>
 
-        <div class="form-group">
-          <div class="label-with-action">
-            <label>Registi</label>
-            <button type="button" class="btn-action-small" (click)="avviaCreazioneRapida('regista')" title="Aggiungi nuovo Regista">
-              <span>+</span> Nuovo
-            </button>
-          </div>
-
-          <div class="custom-multi-select-list">
-            <div class="list-item" *ngFor="let r of registi" (click)="toggleSelection('idRegisti', r.id)">
-              <div class="item-content">
-                <input type="checkbox" [checked]="isItemSelected('idRegisti', r.id)" (click)="$event.stopPropagation(); toggleSelection('idRegisti', r.id)">
-                <span class="item-label">{{ r.cognome }} {{ r.nome }}</span>
-              </div>
-              <button type="button" class="btn-delete-item" (click)="eliminaRegista(r.id, r.nome, r.cognome, $event)" title="Elimina permanentemente">
-                &times;
-              </button>
+      <div class="form-group">
+        <div class="label-with-action">
+          <label>Registi</label>
+          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('regista')" title="Crea">
+            + Nuovo
+          </button>
+        </div>
+        <div class="custom-multi-select-list">
+          <div class="list-item" *ngFor="let r of registi" (click)="toggleSelection('idRegisti', r.id)">
+            <div class="item-content">
+              <input type="checkbox" [checked]="isItemSelected('idRegisti', r.id)" (click)="$event.stopPropagation(); toggleSelection('idRegisti', r.id)">
+              <span>{{ r.nome }} {{ r.cognome }}</span>
             </div>
+            <button type="button" class="btn-delete-item" (click)="eliminaRegista(r.id, r.nome, r.cognome, $event)">&times;</button>
           </div>
         </div>
+      </div>
 
-        <div class="form-group span-2">
-          <div class="label-with-action">
-            <label>Attori Principali</label>
-            <button type="button" class="btn-action-small" (click)="avviaCreazioneRapida('attore')" title="Aggiungi nuovo Attore">
-              <span>+</span> Nuovo
-            </button>
-          </div>
-
-          <div class="custom-multi-select-list">
-            <div class="list-item" *ngFor="let a of attori" (click)="toggleSelection('idAttori', a.id)">
-              <div class="item-content">
-                <input type="checkbox" [checked]="isItemSelected('idAttori', a.id)" (click)="$event.stopPropagation(); toggleSelection('idAttori', a.id)">
-                <span class="item-label">{{ a.cognome }} {{ a.nome }}</span>
-              </div>
-              <button type="button" class="btn-delete-item" (click)="eliminaAttore(a.id, a.nome, a.cognome, $event)" title="Elimina permanentemente">
-                &times;
-              </button>
+      <div class="form-group span-2">
+        <div class="label-with-action">
+          <label>Attori</label>
+          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('attore')" title="Crea">
+            + Nuovo
+          </button>
+        </div>
+        <div class="custom-multi-select-list">
+          <div class="list-item" *ngFor="let a of attori" (click)="toggleSelection('idAttori', a.id)">
+            <div class="item-content">
+              <input type="checkbox" [checked]="isItemSelected('idAttori', a.id)" (click)="$event.stopPropagation(); toggleSelection('idAttori', a.id)">
+              <span>{{ a.nome }} {{ a.cognome }}</span>
             </div>
+            <button type="button" class="btn-delete-item" (click)="eliminaAttore(a.id, a.nome, a.cognome, $event)">&times;</button>
           </div>
         </div>
-      <div class="form-actions mt-4">
-        <button type="button" class="btn-outline" (click)="annulla()" [disabled]="isLoading">Annulla</button>
-        <button type="submit" class="btn-primary" [disabled]="filmForm.invalid || isLoading">
-          {{ isLoading ? 'Salvataggio...' : 'Salva Film' }}
+      </div>
+
+      <div class="form-actions span-2">
+        <button type="submit" class="btn-modern btn-primary" [disabled]="filmForm.invalid">
+          Salva DVD
         </button>
       </div>
 
-      </div>
     </form>
   </div>
 
 </div>
-

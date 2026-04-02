@@ -13,7 +13,7 @@
       <p class="stat-value text-success">{{ totaleIncassato | currency:'EUR':'symbol':'1.2-2' }}</p>
     </div>
     <div class="stat-card">
-      <h3>Volumi di Vendita</h3>
+      <h3>Volumi in Vendita</h3>
       <p class="stat-value">{{ ordini.length }} <span class="small-text">Ordini Totali</span></p>
     </div>
     <div class="stat-card alert-card" [class.active]="ordiniDaSpedire > 0">

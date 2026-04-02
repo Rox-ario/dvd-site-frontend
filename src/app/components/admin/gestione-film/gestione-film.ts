@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { FilmService } from '../../../services/film';
@@ -29,7 +29,8 @@ export class GestioneFilmComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private filmService: FilmService,
-    private adminCatalogoService: AdminCatalogoService
+    private adminCatalogoService: AdminCatalogoService,
+    private cdr: ChangeDetectorRef
   ) {
     this.filmForm = this.fb.group({
       titolo: ['', Validators.required],
@@ -58,12 +59,6 @@ export class GestioneFilmComponent implements OnInit {
 
   caricaFilm() {
     this.filmService.esploraCatalogo().subscribe(f => this.filmList = f);
-  }
-
-  apriFormCreazione() {
-    this.filmForm.reset({ idGeneri: [], idAttori: [], idRegisti: [] });
-    this.filmInModificaId = null;
-    this.mostraForm = true;
   }
 
   apriFormModifica(film: FilmResponse) {
@@ -249,6 +244,19 @@ export class GestioneFilmComponent implements OnInit {
     if (current.includes(idEliminato)) {
       control.setValue(current.filter((id: number) => id !== idEliminato));
     }
+  }
+  protected errorMessage: any;
+
+  apriFormCreazione() {
+    this.filmInModificaId = null;
+    this.filmForm.reset({ anno: new Date().getFullYear(), prezzo: 0 }); // Valori default puliti
+    this.mostraForm = true;
+    this.cdr.detectChanges(); // Consigliato per transizione fluida
+  }
+
+  annullaForm() {
+    this.mostraForm = false;
+    this.cdr.detectChanges();
   }
 }
 

@@ -1,2 +1,212 @@
-.favorite-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+:host {
+  --indigo-600: #4f46e5;
+  --indigo-500: #6366f1;
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-600: #475569;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+}
 
+.profile-container {
+  max-width: 1000px;
+  margin: 2rem auto 4rem;
+  padding: 0 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+/* --- HERO CARD --- */
+.profile-hero-card {
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  border: 1px solid var(--slate-100);
+}
+
+.hero-banner {
+  height: 140px;
+  background: linear-gradient(135deg, var(--indigo-600), var(--indigo-500));
+}
+
+.hero-body {
+  padding: 0 2.5rem 2.5rem;
+  position: relative;
+}
+
+/* Avatar "Squircle" Sovrapposto */
+.avatar-squircle {
+  position: absolute;
+  top: -45px;
+  width: 90px;
+  height: 90px;
+  background-color: white;
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--indigo-600);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 4px solid white;
+}
+
+.user-main-info {
+  padding-top: 3.5rem; /* Spazio per l'avatar assoluto */
+}
+
+.user-name {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  letter-spacing: -0.025em;
+}
+
+.user-email {
+  margin: 0.25rem 0 1rem;
+  color: var(--slate-600);
+  font-size: 0.95rem;
+}
+
+.user-badges {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.badge {
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.role-badge { background-color: #eff6ff; color: var(--indigo-600); }
+.points-badge { background-color: #f8fafc; color: var(--slate-600); border: 1px solid var(--slate-200); }
+
+/* --- NAVIGATION TABS --- */
+.tabs-nav {
+  display: flex;
+  gap: 2rem;
+  border-bottom: 1px solid var(--slate-200);
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--slate-600);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tab-btn:hover { color: var(--slate-900); }
+
+.tab-btn.active {
+  color: var(--indigo-600);
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--indigo-600);
+  border-radius: 3px 3px 0 0;
+}
+
+.tab-icon { font-size: 1.1rem; }
+
+/* --- TAB CONTENT & EMPTY STATES --- */
+.tab-content-area {
+  min-height: 200px;
+}
+
+.empty-state-dashed {
+  border: 2px dashed var(--slate-200);
+  border-radius: 1rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--slate-600);
+  font-size: 0.95rem;
+  background-color: rgba(248, 250, 252, 0.5);
+}
+
+.fade-in { animation: fadeIn 0.3s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Bottoni */
+.btn-edit { background: none; border: 1px solid var(--slate-200); padding: 0.5rem 1rem; border-radius: 0.75rem; font-weight: 600; color: var(--slate-800); cursor: pointer; transition: background 0.2s; }
+.btn-edit:hover { background: var(--slate-50); }
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1.5rem;
+  padding-top: 1rem;
+}
+
+.favorite-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+  aspect-ratio: 2 / 3; /* Mantiene le proporzioni tipiche di una locandina */
+  background-color: var(--slate-200);
+}
+
+.favorite-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
+}
+
+.fav-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Pulsante rimuovi elegante e nascosto finché non passi col mouse */
+.btn-remove-fav {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(15, 23, 42, 0.7); /* Sfondo scuro semi-trasparente */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.favorite-card:hover .btn-remove-fav {
+  opacity: 1;
+}
+
+.btn-remove-fav:hover {
+  background: #dc2626; /* Rosso al passaggio del mouse sul pulsantino */
+  transform: scale(1.1);
+}

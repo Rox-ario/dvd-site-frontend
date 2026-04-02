@@ -1,20 +1,26 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; //
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ClienteService } from '../../../services/cliente';
 import { ClienteProfileResponse } from '../../../models/cliente.model';
 import { FilmResponse } from '../../../models/film.model';
+import { StoricoOrdiniComponent } from '../storico-ordini/storico-ordini';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-dashboard-cliente',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, StoricoOrdiniComponent, RouterLink],
   templateUrl: './dashboard-cliente.html',
   styleUrls: ['./dashboard-cliente.css']
 })
 export class DashboardClienteComponent implements OnInit {
   profilo: ClienteProfileResponse | null = null;
   preferitiDettagliati: FilmResponse[] = [];
+
+  // Gestione Tab
+  activeTab: 'ordini' | 'preferiti' = 'preferiti';
+
   isEditing = false;
   editForm: FormGroup;
   isLoading = false;
@@ -23,7 +29,7 @@ export class DashboardClienteComponent implements OnInit {
   constructor(
     private clienteService: ClienteService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef // 1. Iniezione del ChangeDetectorRef
+    private cdr: ChangeDetectorRef
   ) {
     this.editForm = this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(2)]],
@@ -120,5 +126,20 @@ export class DashboardClienteComponent implements OnInit {
       });
     }
     this.cdr.detectChanges(); // Consigliato per transizioni UI immediate
+  }
+
+  protected getPuntiFedelta()
+  {
+    return this.profilo?.puntiFedeltà ?? 0; // Garantisce un numero anche se il campo è null o undefined
+  }
+
+  setTab(tab: 'ordini' | 'preferiti') {
+    this.activeTab = tab;
+    this.cdr.detectChanges();
+  }
+
+  // Nuovo helper per l'avatar visivo
+  getIniziale(): string {
+    return this.profilo?.nome ? this.profilo.nome.charAt(0).toUpperCase() : 'U';
   }
 }

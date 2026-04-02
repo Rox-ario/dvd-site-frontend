@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OrdineService } from '../../../services/ordine.service';
 import { OrdineResponse } from '../../../models/ordine.model';
@@ -16,7 +16,7 @@ export class StoricoOrdiniComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
 
-  constructor(private ordineService: OrdineService) {}
+  constructor(private ordineService: OrdineService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.caricaStorico();
@@ -27,10 +27,16 @@ export class StoricoOrdiniComponent implements OnInit {
       next: (dati) => {
         this.ordini = dati;
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
-      error: () => {
-        this.errorMessage = 'Impossibile caricare lo storico ordini.';
+      error: (err) => {
+        if (err.status === 404) {
+          this.ordini = [];
+        } else {
+          this.errorMessage = 'Impossibile caricare lo storico ordini.';
+        }
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

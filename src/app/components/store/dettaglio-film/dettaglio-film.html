@@ -1,0 +1,86 @@
+<div class="dettaglio-container" *ngIf="film && !isLoading">
+
+  <a routerLink="/catalogo" class="back-link">← Torna al Catalogo</a>
+
+  <div class="movie-showcase">
+    <div class="poster-col">
+      <img [src]="film.urlImmagine" [alt]="'Locandina ' + film.titolo" class="main-poster">
+
+      <div class="action-box">
+        <div class="price-tag">{{ film.prezzo | currency:'EUR':'symbol':'1.2-2' }}</div>
+
+        <button
+          class="btn-primary-large"
+          [disabled]="film.isAttivo === false || film.stock === 0"
+          (click)="aggiungiAlCarrello()"
+          [class.success]="aggiuntoDiRecente">
+
+          <span *ngIf="!aggiuntoDiRecente && film.stock > 0">Aggiungi al Carrello</span>
+          <span *ngIf="aggiuntoDiRecente">✓ Aggiunto con successo!</span>
+          <span *ngIf="film.stock === 0">Attualmente Esaurito</span>
+        </button>
+
+        <p class="stock-info" [ngClass]="{'text-danger': film.stock < 5 && film.stock > 0}">
+          Disponibilità: {{ film.stock }} copie
+        </p>
+      </div>
+    </div>
+
+    <div class="info-col">
+
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="title">{{ film.titolo }}</h1>
+
+        <button
+          *ngIf="isLoggedIn"
+          (click)="togglePreferito()"
+          style="background: none; border: none; font-size: 2.2rem; cursor: pointer; transition: transform 0.2s;"
+          [title]="isPreferito ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'">
+          {{ isPreferito ? '❤️' : '🤍' }}
+        </button>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-item">{{ film.anno }}</span>
+        <span class="meta-item">{{ film.durataMinuti }} min</span>
+        <div class="badges">
+          <span class="badge" *ngFor="let gen of film.genere">{{ gen }}</span>
+        </div>
+      </div>
+
+      <div class="synopsis-section">
+        <h3>Trama</h3>
+        <p>{{ film.trama }}</p>
+      </div>
+
+      <div class="cast-crew-grid">
+        <div class="crew-box">
+          <h3>Regia</h3>
+          <ul>
+            <li *ngFor="let regista of film.registi">{{ regista }}</li>
+            <li *ngIf="film.registi.length === 0" class="text-muted">N/D</li>
+          </ul>
+        </div>
+
+        <div class="crew-box">
+          <h3>Cast Principale</h3>
+          <ul>
+            <li *ngFor="let attore of film.attori">{{ attore }}</li>
+            <li *ngIf="film.attori.length === 0" class="text-muted">N/D</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loader-container" *ngIf="isLoading">
+  <div class="spinner"></div>
+  <p>Preparazione della pellicola in corso...</p>
+</div>
+
+<div class="alert-error" *ngIf="errorMessage">
+  {{ errorMessage }}
+  <br><br>
+  <a routerLink="/catalogo" class="back-link">Torna al catalogo sicuro</a>
+</div>

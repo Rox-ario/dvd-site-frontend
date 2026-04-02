@@ -36,14 +36,13 @@ export class CatalogoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // 1. Controlliamo se l'utente è loggato e, se sì, recuperiamo i suoi preferiti
     this.isLoggedIn = this.authService.isLoggedIn();
 
     if (this.isLoggedIn) {
-      this.clienteService.ottieniDettaglioPreferiti().subscribe({
-        next: (film) => {
-          // Inseriamo gli ID nel Set per colorare immediatamente i cuoricini corretti
-          film.forEach(f => this.preferitiIds.add(f.idFilm));
+      // Usa il metodo leggero al posto di ottieniDettaglioPreferiti()
+      this.clienteService.ottieniIdPreferiti().subscribe({
+        next: (ids) => {
+          ids.forEach(id => this.preferitiIds.add(id));
         },
         error: () => console.error('Impossibile caricare i preferiti in background.')
       });

@@ -30,4 +30,8 @@ export class ClienteService {
   ottieniDettaglioPreferiti(): Observable<FilmResponse[]> {
     return this.http.get<FilmResponse[]>(`${this.API_URL}/preferiti`);
   }
+
+  ottieniIdPreferiti(): Observable<number[]> {
+    return this.http.get<number[]>(`${this.API_URL}/preferiti/ids`);
+  }
 }

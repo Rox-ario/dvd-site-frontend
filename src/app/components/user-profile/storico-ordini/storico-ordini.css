@@ -1,4 +1,4 @@
-.storico-container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+.storico-container { margin: 0 auto;  }
 .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; }
 .header-actions h1 { margin: 0; color: #111827; }
 .btn-outline { padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 6px; color: #4b5563; text-decoration: none; font-weight: 500; }

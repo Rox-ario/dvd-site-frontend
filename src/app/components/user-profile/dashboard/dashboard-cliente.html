@@ -1,87 +1,101 @@
-<div class="dashboard-container">
+<div class="profile-container">
 
-  <header class="dashboard-header">
-    <h1>Area Personale</h1>
-    <p>Gestisci il tuo account e le tue preferenze</p>
-  </header>
-
-  <div class="loader" *ngIf="isLoading && !profilo">Caricamento in corso...</div>
+  <div class="loader-container" *ngIf="isLoading && !profilo">
+    <div class="spinner"></div>
+    <p>Caricamento profilo...</p>
+  </div>
 
   <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
 
-  <div class="dashboard-grid" *ngIf="profilo">
+  <ng-container *ngIf="profilo">
+    <div class="profile-hero-card">
+      <div class="hero-banner"></div>
 
-    <section class="profile-card">
-      <div class="card-header">
-        <h2>Dati Anagrafici</h2>
-        <button class="btn-text" (click)="toggleEditMode()">
-          {{ isEditing ? 'Annulla' : 'Modifica' }}
-        </button>
+      <div class="hero-body">
+        <div class="avatar-squircle">
+          {{ getIniziale() }}
+        </div>
+
+        <div class="user-main-info">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h1 class="user-name">{{ profilo.nome }} {{ profilo.cognome }}</h1>
+              <p class="user-email">{{ profilo.email }}</p>
+            </div>
+            <button class="btn-edit" (click)="toggleEditMode()">
+              {{ isEditing ? 'Annulla' : 'Modifica Profilo' }}
+            </button>
+          </div>
+
+          <div class="user-badges">
+            <span class="badge role-badge">{{ profilo.ruolo }}</span>
+            <span class="badge points-badge">⭐ {{ getPuntiFedelta() }} Punti</span>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <div class="card-body" *ngIf="!isEditing">
-        <div class="data-row">
-          <span class="label">Nome</span>
-          <span class="value">{{ profilo.nome }}</span>
-        </div>
-        <div class="data-row">
-          <span class="label">Cognome</span>
-          <span class="value">{{ profilo.cognome }}</span>
-        </div>
-        <div class="data-row">
-          <span class="label">Email</span>
-          <span class="value">{{ profilo.email }}</span>
-        </div>
-        <div class="data-row mt-2">
-          <span class="badge role-badge">{{ profilo.ruolo }}</span>
-        </div>
-      </div>
+    <div class="edit-section" *ngIf="isEditing">
+      <form [formGroup]="editForm" (ngSubmit)="salvaModifiche()" style="background: var(--slate-50); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--slate-200); margin-bottom: 2rem;">
+        <h3 style="margin-top: 0; color: var(--slate-800);">Aggiorna i tuoi dati</h3>
 
-      <form class="card-body edit-form" [formGroup]="editForm" (ngSubmit)="salvaModifiche()" *ngIf="isEditing">
-        <div class="form-group">
-          <label>Nome</label>
-          <input type="text" formControlName="nome" [class.invalid]="editForm.get('nome')?.invalid && editForm.get('nome')?.touched">
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.5rem;">Nome</label>
+            <input type="text" formControlName="nome" style="width: 100%; padding: 0.75rem; border: 1px solid var(--slate-200); border-radius: 0.5rem;">
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.5rem;">Cognome</label>
+            <input type="text" formControlName="cognome" style="width: 100%; padding: 0.75rem; border: 1px solid var(--slate-200); border-radius: 0.5rem;">
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Cognome</label>
-          <input type="text" formControlName="cognome" [class.invalid]="editForm.get('cognome')?.invalid && editForm.get('cognome')?.touched">
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+          <button type="button" class="btn-edit" (click)="toggleEditMode()">Annulla</button>
+          <button type="submit" style="background: var(--indigo-600); color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; border: none; cursor: pointer; font-weight: 600;" [disabled]="editForm.invalid || isLoading">Salva Modifiche</button>
         </div>
-
-        <button type="submit" class="btn-primary" [disabled]="editForm.invalid || isLoading">
-          {{ isLoading ? 'Salvataggio...' : 'Salva Modifiche' }}
-        </button>
       </form>
-    </section>
+    </div>
 
-    <div class="side-column">
+    <div class="tabs-nav">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'ordini'"
+        (click)="setTab('ordini')">
+        <span class="tab-icon">📦</span> Storico Ordini
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'preferiti'"
+        (click)="setTab('preferiti')">
+        <span class="tab-icon">🤍</span> I Tuoi Preferiti
+      </button>
+    </div>
 
-      <section class="loyalty-card">
-        <div class="loyalty-icon">⭐</div>
-        <div class="loyalty-data">
-          <h3>Punti Fedeltà</h3>
-          <p class="points">{{ getPuntiFedelta() }}</p>
+    <div class="tab-content-area">
+
+      <div *ngIf="activeTab === 'preferiti'" class="fade-in">
+        <div class="empty-state-dashed" *ngIf="preferitiDettagliati.length === 0">
+          Non hai ancora aggiunto film ai preferiti.
         </div>
-      </section>
 
-      <section class="favorites-card">
-        <h2>I tuoi Preferiti</h2>
+        <div class="favorites-grid" *ngIf="preferitiDettagliati.length > 0">
+          <div class="favorite-card" *ngFor="let film of preferitiDettagliati">
+            <a [routerLink]="['/dettaglio', film.idFilm]">
+              <img [src]="film.urlImmagine" [alt]="'Locandina di ' + film.titolo" class="fav-poster">
+            </a>
 
-        <div class="empty-state" *ngIf="preferitiDettagliati.length === 0">
-          Non hai ancora aggiunto film ai preferiti. Esplora il catalogo!
-        </div>
-
-        <ul class="favorites-list" *ngIf="preferitiDettagliati.length > 0">
-          <li *ngFor="let film of preferitiDettagliati" class="favorite-item">
-            <span class="movie-title">{{ film.titolo }}</span>
-            <button class="btn-text text-danger" (click)="rimuoviDaPreferiti(film.idFilm)" title="Rimuovi">
+            <button class="btn-remove-fav" (click)="rimuoviDaPreferiti(film.idFilm)" title="Rimuovi dai preferiti">
               ✕
             </button>
-          </li>
-        </ul>
-      </section>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'ordini'" class="fade-in">
+        <app-storico-ordini></app-storico-ordini>
+      </div>
 
     </div>
-  </div>
+  </ng-container>
 </div>
-

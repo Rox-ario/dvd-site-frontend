@@ -29,12 +29,14 @@
     <div class="movie-grid">
       <article class="movie-card" *ngFor="let film of filmList">
 
-        <div class="badge-overlay" *ngIf="!film.isAttivo || film.stock === 0">
+        <div class="badge-overlay" *ngIf="film.isAttivo === false || film.stock === 0">
           Esaurito
         </div>
 
         <div class="card-img-container">
-          <img [src]="film.urlImmagine" [alt]="'Locandina di ' + film.titolo" loading="lazy">
+          <a [routerLink]="['/dettaglio', film.idFilm]">
+            <img [src]="film.urlImmagine" [alt]="'Locandina di ' + film.titolo" loading="lazy">
+          </a>
         </div>
 
         <div class="card-content">
@@ -43,7 +45,12 @@
             <span class="generi" *ngIf="film.genere && film.genere.length">{{ film.genere[0] }}</span>
           </div>
 
-          <h3 class="movie-title">{{ film.titolo }}</h3>
+          <h3 class="movie-title">
+            <a [routerLink]="['/dettaglio', film.idFilm]" style="text-decoration: none; color: inherit;">
+              {{ film.titolo }}
+            </a>
+          </h3>
+
           <p class="movie-price">{{ film.prezzo | currency:'EUR':'symbol':'1.2-2' }}</p>
 
           <button
