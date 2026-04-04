@@ -58,7 +58,7 @@
           <select
             class="status-select"
             [ngClass]="ordine.stato.toLowerCase()"
-            [value]="ordine.stato"
+            [(ngModel)]="ordine.stato"
             (change)="cambiaStato(ordine.numeroOrdine, $event)">
             <option *ngFor="let stato of statiDisponibili" [value]="stato">
               {{ stato.replace('_', ' ') }}

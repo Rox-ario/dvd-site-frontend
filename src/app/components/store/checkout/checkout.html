@@ -1,41 +1,88 @@
 <div class="checkout-wrapper">
-  <div class="checkout-card">
+  <div class="checkout-card" style="max-width: 800px; width: 100%;">
     <header>
       <h1>Conferma Acquisto</h1>
-      <p *ngIf="!successMessage">Un ultimo passo prima della visione.</p>
+      <p *ngIf="!successMessage">Completa i dettagli di spedizione e pagamento.</p>
     </header>
 
     <div class="alert alert-success" *ngIf="successMessage">
       {{ successMessage }}
       <p class="small-text">Reindirizzamento allo storico ordini in corso...</p>
     </div>
+    <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
 
-    <div class="alert alert-danger" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
+    <div style="display: flex; gap: 2rem; flex-wrap: wrap;" *ngIf="!successMessage">
 
-    <ng-container *ngIf="!successMessage">
-      <div class="summary-box">
+      <form [formGroup]="checkoutForm" (ngSubmit)="confermaOrdine()" style="flex: 1; min-width: 300px;">
+
+        <h3 style="margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">1. Indirizzo di Spedizione</h3>
+        <div class="form-group">
+          <label>Indirizzo (Via e Civico)</label>
+          <input type="text" formControlName="indirizzo" placeholder="Es. Via Roma, 10">
+        </div>
+        <div style="display: flex; gap: 1rem;">
+          <div class="form-group" style="flex: 2;">
+            <label>Città</label>
+            <input type="text" formControlName="citta" placeholder="Es. Milano">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label>CAP</label>
+            <input type="text" formControlName="cap" placeholder="Es. 20100">
+          </div>
+        </div>
+
+        <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">2. Metodo di Pagamento</h3>
+        <div class="form-group">
+          <label>Titolare Carta</label>
+          <input type="text" formControlName="titolare" placeholder="Nome e Cognome sulla carta">
+        </div>
+        <div class="form-group">
+          <label>Numero Carta</label>
+          <input
+            type="text"
+            formControlName="numeroCarta"
+            placeholder="0000 0000 0000 0000"
+            maxlength="19"
+            (input)="formattaNumeroCarta($event)">
+        </div>
+        <div style="display: flex; gap: 1rem;">
+          <div class="form-group" style="flex: 1;">
+            <label>Scadenza (MM/AA)</label>
+            <input
+              type="text"
+              formControlName="scadenza"
+              placeholder="MM/AA"
+              maxlength="5"
+              (input)="formattaScadenza($event)">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label>CVV</label>
+            <input type="password" formControlName="cvv" placeholder="123" maxlength="4">
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top: 2rem;">
+          <button type="button" class="btn-outline" routerLink="/carrello" [disabled]="isLoading">Annulla</button>
+          <button type="submit" class="btn-primary" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Paga {{ cartService.calcolaTotale((cartService.cartItems$ | async) || []) | currency:'EUR':'symbol':'1.2-2' }}</span>
+            <span *ngIf="isLoading">Transazione in corso...</span>
+          </button>
+        </div>
+      </form>
+
+      <div class="summary-box" style="flex: 1; min-width: 300px; height: fit-content;">
+        <h3 style="margin-top: 0;">Riepilogo</h3>
         <div class="summary-row" *ngFor="let item of cartService.cartItems$ | async">
           <span class="item-name"><span class="qty">{{ item.quantita }}x</span> {{ item.film.titolo }}</span>
           <span class="item-price">{{ (item.film.prezzo * item.quantita) | currency:'EUR':'symbol':'1.2-2' }}</span>
         </div>
-
         <div class="divider"></div>
-
         <div class="summary-row total-row">
-          <span>Totale da addebitare:</span>
+          <span>Totale:</span>
           <span>{{ cartService.calcolaTotale((cartService.cartItems$ | async) || []) | currency:'EUR':'symbol':'1.2-2' }}</span>
         </div>
       </div>
 
-      <div class="actions">
-        <button class="btn-outline" routerLink="/carrello" [disabled]="isLoading">Modifica Carrello</button>
-        <button class="btn-primary" (click)="confermaOrdine()" [disabled]="isLoading">
-          <span *ngIf="!isLoading">Paga Ora</span>
-          <span *ngIf="isLoading">Transazione in corso...</span>
-        </button>
-      </div>
-    </ng-container>
+    </div>
   </div>
 </div>

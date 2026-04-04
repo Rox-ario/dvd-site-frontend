@@ -29,5 +29,6 @@ export interface RigaOrdineRequest {
 export interface CreaOrdineRequest
 {
   articoli: RigaOrdineRequest[];
+  indirizzoSpedizione: string;
 }
 

@@ -80,6 +80,11 @@ export const routes: Routes = [
     ]
   },
 
+  {
+    path: 'carrello',
+    loadComponent: () => import('./components/store/carrello/carrello').then(m => m.CarrelloComponent)
+  },
+
   // 5. ROTTA DI FALLBACK (Pagina 404)
   {
     path: '**',

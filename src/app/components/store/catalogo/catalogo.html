@@ -54,6 +54,7 @@
           <p class="movie-price">{{ film.prezzo | currency:'EUR':'symbol':'1.2-2' }}</p>
 
           <button
+            *ngIf="!isAdmin"
             class="btn-primary"
             [disabled]="!film.isAttivo || film.stock === 0"
             (click)="aggiungiAlCarrello(film)"
@@ -61,7 +62,6 @@
 
             <span *ngIf="!aggiuntiDiRecente.has(film.idFilm)">Aggiungi al Carrello</span>
             <span *ngIf="aggiuntiDiRecente.has(film.idFilm)">✓ Aggiunto!</span>
-
           </button>
         </div>
       </article>

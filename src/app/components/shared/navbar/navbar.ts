@@ -17,6 +17,7 @@ export class NavbarComponent implements OnInit {
   // Flussi reattivi per guidare l'interfaccia
   isLoggedIn$!: Observable<boolean>;
   isAdmin$!: Observable<boolean>;
+  isCliente$!: Observable<boolean>;
   cartItemCount$!: Observable<number>;
 
   constructor(
@@ -34,6 +35,10 @@ export class NavbarComponent implements OnInit {
     // 2. È admin se il ruolo corrisponde
     this.isAdmin$ = this.authService.currentUser$.pipe(
       map(user => user?.ruolo === Ruolo.ADMIN)
+    );
+
+    this.isCliente$ = this.authService.currentUser$.pipe(
+      map(user => user?.ruolo === Ruolo.CLIENTE)
     );
 
     // 3. Il totale nel carrello è la somma delle quantità fisiche, non solo delle righe

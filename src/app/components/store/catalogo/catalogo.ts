@@ -20,6 +20,7 @@ export class CatalogoComponent implements OnInit {
   searchControl = new FormControl('');
   film$!: Observable<FilmResponse[]>;
   errorMessage = '';
+  isAdmin = false;
 
   // Set reattivo per tenere traccia dei film appena aggiunti al carrello (per il feedback visivo)
   aggiuntiDiRecente = new Set<number>();
@@ -37,6 +38,7 @@ export class CatalogoComponent implements OnInit {
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
+    this.isAdmin = this.authService.isAdmin();
 
     if (this.isLoggedIn) {
       // Usa il metodo leggero al posto di ottieniDettaglioPreferiti()

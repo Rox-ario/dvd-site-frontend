@@ -21,6 +21,7 @@ export class DettaglioFilmComponent implements OnInit {
   aggiuntoDiRecente = false;
   isPreferito = false;
   isLoggedIn = false;
+  isAdmin = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -37,6 +38,7 @@ export class DettaglioFilmComponent implements OnInit {
     const idParam = this.route.snapshot.paramMap.get('id');
     const id = idParam ? Number(idParam) : null;
     this.isLoggedIn = this.authService.isLoggedIn();
+    this.isAdmin = this.authService.isAdmin();
 
     if (id) {
       this.caricaDettaglio(id);

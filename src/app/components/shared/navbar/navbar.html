@@ -12,10 +12,12 @@
       <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-link admin-link">Area Admin</a>
     </ng-container>
 
-    <a routerLink="/carrello" routerLinkActive="active" class="nav-link cart-link">
-      🛒 Carrello
-      <span class="cart-badge" *ngIf="(cartItemCount$ | async) as count">{{ count }}</span>
-    </a>
+    <ng-container *ngIf="isCliente$ | async">
+      <a routerLink="/carrello" routerLinkActive="active" class="nav-link cart-link">
+        🛒 Carrello
+        <span class="cart-badge" *ngIf="(cartItemCount$ | async) as count">{{ count }}</span>
+      </a>
+    </ng-container>
 
     <div class="auth-section">
 

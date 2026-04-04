@@ -19,6 +19,8 @@ export class GestioneFilmComponent implements OnInit {
   generi: Genere[] = [];
   attori: Attore[] = [];
   registi: Regista[] = [];
+  testoRicerca = '';
+  genereSelezionato = '';
 
   // Gestione stato UI
   mostraForm = false;
@@ -58,7 +60,64 @@ export class GestioneFilmComponent implements OnInit {
   }
 
   caricaFilm() {
-    this.filmService.esploraCatalogo().subscribe(f => this.filmList = f);
+    this.isLoading = true;
+
+    // Costruiamo dinamicamente l'oggetto con i filtri solo se contengono testo
+    const filtri: any = {};
+    if (this.testoRicerca.trim()) {
+      filtri.titolo = this.testoRicerca.trim();
+    }
+    if (this.genereSelezionato) {
+      filtri.nomeGenere = this.genereSelezionato;
+    }
+
+    // Ora passiamo l'oggetto filtri al service
+    this.filmService.esploraCatalogo(filtri).subscribe({
+      next: (f) => {
+        this.filmList = f;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  salvaFilm() {
+    if (this.filmForm.invalid) return;
+    this.isLoading = true;
+
+    const rawValue = this.filmForm.value;
+    const requestData: CreaFilmRequest = {
+      ...rawValue,
+      idGeneri: rawValue.idGeneri.map(Number),
+      idAttori: rawValue.idAttori.map(Number),
+      idRegisti: rawValue.idRegisti.map(Number)
+    };
+
+    const operazione = this.filmInModificaId
+      ? this.filmService.aggiornaFilm(this.filmInModificaId, requestData)
+      : this.filmService.creaFilm(requestData);
+
+    operazione.subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.mostraForm = false;
+
+        // Ecco il feedback positivo esplicito che mancava
+        alert("Operazione completata! Il film è stato salvato con successo 🍿");
+
+        this.caricaFilm(); // Ricarica la lista dal backend
+        this.cdr.detectChanges(); // <-- Forza l'aggiornamento grafico immediato e previene i doppi click
+      },
+      error: (err) => {
+        this.isLoading = false;
+        alert("Errore durante il salvataggio: " + (err.error?.message || "Riprova."));
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   apriFormModifica(film: FilmResponse) {
@@ -83,36 +142,6 @@ export class GestioneFilmComponent implements OnInit {
   annulla() {
     this.mostraForm = false;
     this.filmInModificaId = null;
-  }
-
-  salvaFilm() {
-    if (this.filmForm.invalid) return;
-    this.isLoading = true;
-
-    // Convertiamo i valori stringa delle select multiple in array di numeri
-    const rawValue = this.filmForm.value;
-    const requestData: CreaFilmRequest = {
-      ...rawValue,
-      idGeneri: rawValue.idGeneri.map(Number),
-      idAttori: rawValue.idAttori.map(Number),
-      idRegisti: rawValue.idRegisti.map(Number)
-    };
-
-    const operazione = this.filmInModificaId
-      ? this.filmService.aggiornaFilm(this.filmInModificaId, requestData)
-      : this.filmService.creaFilm(requestData);
-
-    operazione.subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.mostraForm = false;
-        this.caricaFilm(); // Ricarichiamo la lista aggiornata
-      },
-      error: (err) => {
-        this.isLoading = false;
-        alert("Errore durante il salvataggio: " + (err.error?.message || "Riprova."));
-      }
-    });
   }
 
   eliminaFilm(id: number, titolo: string) {
@@ -142,25 +171,46 @@ export class GestioneFilmComponent implements OnInit {
     if (!nome.trim()) return;
 
     if (tipo === 'genere') {
-      this.adminCatalogoService.creaGenere({ nome: nome.trim() }).subscribe(nuovo => {
-        this.generi = [...this.generi, nuovo]; // Aggiorna elenco dropdown
-        const attuali = this.filmForm.value.idGeneri || [];
-        this.filmForm.patchValue({ idGeneri: [...attuali, nuovo.id] }); // Auto-seleziona
-        this.annullaCreazioneRapida();
+      this.adminCatalogoService.creaGenere({ nome: nome.trim() }).subscribe({
+        next: (nuovo) => {
+          this.generi = [...this.generi, nuovo]; // Aggiorna elenco dropdown
+          const attuali = this.filmForm.value.idGeneri || [];
+          this.filmForm.patchValue({ idGeneri: [...attuali, nuovo.id] }); // Auto-seleziona
+          this.annullaCreazioneRapida();
+          this.cdr.detectChanges(); // <-- Forza l'aggiornamento della UI al primo colpo
+        },
+        error: (err) => {
+          alert("Errore: " + (err.error?.message || "Impossibile creare il genere."));
+          this.cdr.detectChanges();
+        }
       });
     } else if (tipo === 'regista') {
-      this.adminCatalogoService.creaRegista({ nome: nome.trim(), cognome: cognome.trim() }).subscribe(nuovo => {
-        this.registi = [...this.registi, nuovo];
-        const attuali = this.filmForm.value.idRegisti || [];
-        this.filmForm.patchValue({ idRegisti: [...attuali, nuovo.id] });
-        this.annullaCreazioneRapida();
+      this.adminCatalogoService.creaRegista({ nome: nome.trim(), cognome: cognome.trim() }).subscribe({
+        next: (nuovo) => {
+          this.registi = [...this.registi, nuovo];
+          const attuali = this.filmForm.value.idRegisti || [];
+          this.filmForm.patchValue({ idRegisti: [...attuali, nuovo.id] });
+          this.annullaCreazioneRapida();
+          this.cdr.detectChanges(); // <-- Forza l'aggiornamento
+        },
+        error: (err) => {
+          alert("Errore: " + (err.error?.message || "Impossibile creare il regista."));
+          this.cdr.detectChanges();
+        }
       });
     } else if (tipo === 'attore') {
-      this.adminCatalogoService.creaAttore({ nome: nome.trim(), cognome: cognome.trim() }).subscribe(nuovo => {
-        this.attori = [...this.attori, nuovo];
-        const attuali = this.filmForm.value.idAttori || [];
-        this.filmForm.patchValue({ idAttori: [...attuali, nuovo.id] });
-        this.annullaCreazioneRapida();
+      this.adminCatalogoService.creaAttore({ nome: nome.trim(), cognome: cognome.trim() }).subscribe({
+        next: (nuovo) => {
+          this.attori = [...this.attori, nuovo];
+          const attuali = this.filmForm.value.idAttori || [];
+          this.filmForm.patchValue({ idAttori: [...attuali, nuovo.id] });
+          this.annullaCreazioneRapida();
+          this.cdr.detectChanges(); // <-- Forza l'aggiornamento
+        },
+        error: (err) => {
+          alert("Errore: " + (err.error?.message || "Impossibile creare l'attore."));
+          this.cdr.detectChanges();
+        }
       });
     }
   }

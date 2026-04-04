@@ -10,6 +10,7 @@
         <div class="price-tag">{{ film.prezzo | currency:'EUR':'symbol':'1.2-2' }}</div>
 
         <button
+          *ngIf="!isAdmin"
           class="btn-primary-large"
           [disabled]="film.isAttivo === false || film.stock === 0"
           (click)="aggiungiAlCarrello()"
