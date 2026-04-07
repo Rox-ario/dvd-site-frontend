@@ -22,6 +22,10 @@ export class GestioneFilmComponent implements OnInit {
   testoRicerca = '';
   genereSelezionato = '';
 
+  ricercaGenereTerm = '';
+  ricercaRegistaTerm = '';
+  ricercaAttoreTerm = '';
+
   // Gestione stato UI
   mostraForm = false;
   isLoading = false;
@@ -51,6 +55,44 @@ export class GestioneFilmComponent implements OnInit {
   ngOnInit(): void {
     this.caricaDatiBase();
     this.caricaFilm();
+  }
+
+  get generiFiltrati(): Genere[] {
+    const selezionati = this.filmForm.get('idGeneri')?.value || [];
+    const term = this.ricercaGenereTerm.toLowerCase().trim();
+
+    return this.generi.filter(g =>
+      selezionati.includes(g.id) || g.nome.toLowerCase().includes(term)
+    ).sort((a, b) => this.ordinaSelezionatiInCima(selezionati, a.id, b.id) || a.nome.localeCompare(b.nome));
+  }
+
+  get registiFiltrati(): Regista[] {
+    const selezionati = this.filmForm.get('idRegisti')?.value || [];
+    const term = this.ricercaRegistaTerm.toLowerCase().trim();
+
+    return this.registi.filter(r => {
+      const nomeCompleto = `${r.nome} ${r.cognome}`.toLowerCase();
+      return selezionati.includes(r.id) || nomeCompleto.includes(term);
+    }).sort((a, b) => this.ordinaSelezionatiInCima(selezionati, a.id, b.id) || a.nome.localeCompare(b.nome));
+  }
+
+  get attoriFiltrati(): Attore[] {
+    const selezionati = this.filmForm.get('idAttori')?.value || [];
+    const term = this.ricercaAttoreTerm.toLowerCase().trim();
+
+    return this.attori.filter(a => {
+      const nomeCompleto = `${a.nome} ${a.cognome}`.toLowerCase();
+      return selezionati.includes(a.id) || nomeCompleto.includes(term);
+    }).sort((a, b) => this.ordinaSelezionatiInCima(selezionati, a.id, b.id) || a.nome.localeCompare(b.nome));
+  }
+
+  // Helper per mantenere gli elementi spuntati sempre in cima alla lista
+  private ordinaSelezionatiInCima(selezionati: number[], idA: number, idB: number): number {
+    const aSel = selezionati.includes(idA);
+    const bSel = selezionati.includes(idB);
+    if (aSel && !bSel) return -1;
+    if (!aSel && bSel) return 1;
+    return 0; // Se entrambi selezionati o entrambi non selezionati, passa al sorting alfabetico
   }
 
   caricaDatiBase() {

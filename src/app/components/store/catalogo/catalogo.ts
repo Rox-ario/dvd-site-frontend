@@ -1,13 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { Observable, debounceTime, distinctUntilChanged, startWith, switchMap, catchError, of } from 'rxjs';
+import {
+  Observable, debounceTime, distinctUntilChanged, startWith, switchMap, catchError, of, shareReplay,
+  combineLatest, map
+} from 'rxjs';
 import { FilmService } from '../../../services/film';
 import { CartService } from '../../../services/cart';
 import { ClienteService } from '../../../services/cliente'; // Aggiunto per i preferiti
 import { AuthService } from '../../../services/auth';       // Aggiunto per verificare se è loggato
 import { FilmResponse } from '../../../models/film.model';
+import {Attore, Genere, Regista} from '../../../models/catalogo.model';
+import {AdminCatalogoService} from '../../../services/admin-catalogo.service';
 
 @Component({
   selector: 'app-catalogo',
@@ -17,10 +22,20 @@ import { FilmResponse } from '../../../models/film.model';
   styleUrls: ['./catalogo.css']
 })
 export class CatalogoComponent implements OnInit {
+  filterForm: FormGroup;
   searchControl = new FormControl('');
   film$!: Observable<FilmResponse[]>;
   errorMessage = '';
   isAdmin = false;
+  mostraFiltriAvanzati = false;
+  searchGenere = new FormControl('');
+  searchRegista = new FormControl('');
+  searchAttore = new FormControl('');
+
+  // Dati per i filtri
+  filteredGeneri$!: Observable<Genere[]>;
+  filteredRegisti$!: Observable<Regista[]>;
+  filteredAttori$!: Observable<Attore[]>;
 
   // Set reattivo per tenere traccia dei film appena aggiunti al carrello (per il feedback visivo)
   aggiuntiDiRecente = new Set<number>();
@@ -30,11 +45,23 @@ export class CatalogoComponent implements OnInit {
   isLoggedIn = false;
 
   constructor(
+    private fb: FormBuilder,
     private filmService: FilmService,
     private cartService: CartService,
     private clienteService: ClienteService, // Iniettato
-    private authService: AuthService        // Iniettato
-  ) {}
+    private authService: AuthService,        // Iniettato
+    private catalogoService: AdminCatalogoService
+  ) {
+    // Definizione di tutti i criteri di ricerca
+    this.filterForm = this.fb.group({
+      titolo: [''],
+      nomeGenere: [''],
+      nomeRegista: [''],
+      nomeAttore: [''],
+      anno: [null],
+      prezzoMax: [null]
+    });
+  }
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
@@ -50,14 +77,54 @@ export class CatalogoComponent implements OnInit {
       });
     }
 
+    const baseGeneri$ = this.catalogoService.ottieniGeneri().pipe(shareReplay(1));
+    const baseAttori$ = this.catalogoService.ottieniAttori().pipe(shareReplay(1));
+    const baseRegisti$ = this.catalogoService.ottieniRegisti().pipe(shareReplay(1));
+
+    this.filteredGeneri$ = combineLatest([
+      baseGeneri$,
+      this.searchGenere.valueChanges.pipe(startWith(''))
+    ]).pipe(
+      map(([items, search]) => {
+        const term = (search || '').toLowerCase();
+        // Filtra per nome e mostra massimo 12 pillole
+        return items.filter(i => i.nome.toLowerCase().includes(term)).slice(0, 12);
+      })
+    );
+
+    this.filteredRegisti$ = combineLatest([
+      baseRegisti$,
+      this.searchRegista.valueChanges.pipe(startWith(''))
+    ]).pipe(
+      map(([items, search]) => {
+        const term = (search || '').toLowerCase();
+        return items.filter(i => (i.nome + ' ' + i.cognome).toLowerCase().includes(term)).slice(0, 12);
+      })
+    );
+
+    this.filteredAttori$ = combineLatest([
+      baseAttori$,
+      this.searchAttore.valueChanges.pipe(startWith(''))
+    ]).pipe(
+      map(([items, search]) => {
+        const term = (search || '').toLowerCase();
+        return items.filter(i => (i.nome + ' ' + i.cognome).toLowerCase().includes(term)).slice(0, 12);
+      })
+    );
+
     // 2. Logica di ricerca reattiva del catalogo
-    this.film$ = this.searchControl.valueChanges.pipe(
-      startWith(''),
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(titolo => {
+    this.film$ = this.filterForm.valueChanges.pipe(
+      startWith(this.filterForm.value),
+      debounceTime(400),
+      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+      switchMap(filtri => {
         this.errorMessage = '';
-        return this.filmService.esploraCatalogo({ titolo: titolo || undefined }).pipe(
+        // Rimuoviamo le stringhe vuote o null per non inviare query param inutili
+        const filtriPuliti = Object.fromEntries(
+          Object.entries(filtri).filter(([_, v]) => v !== null && v !== '')
+        );
+
+        return this.filmService.esploraCatalogo(filtriPuliti).pipe(
           catchError(() => {
             this.errorMessage = 'Impossibile caricare il catalogo in questo momento.';
             return of([]);
@@ -65,6 +132,16 @@ export class CatalogoComponent implements OnInit {
         );
       })
     );
+  }
+
+  toggleFiltri() {
+    this.mostraFiltriAvanzati = !this.mostraFiltriAvanzati;
+  }
+
+  resetFiltri() {
+    this.filterForm.reset({
+      titolo: this.filterForm.get('titolo')?.value || '' // Mantiene il titolo, resetta il resto
+    });
   }
 
   // Funzione per il carrello
@@ -99,5 +176,10 @@ export class CatalogoComponent implements OnInit {
         error: () => alert("Errore durante l'aggiunta ai preferiti.")
       });
     }
+  }
+  setFiltroPill(controlName: string, value: string) {
+    const currentVal = this.filterForm.get(controlName)?.value;
+    // Se clicco la stessa pillola, la deseleziono (svuoto il filtro), altrimenti la imposto
+    this.filterForm.get(controlName)?.setValue(currentVal === value ? '' : value);
   }
 }

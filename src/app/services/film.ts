@@ -12,8 +12,8 @@ export class FilmService {
 
   constructor(private http: HttpClient) {}
 
-  // Utilizziamo un oggetto per i filtri, rispecchiando i @RequestParam del backend
-  esploraCatalogo(filtri?: { titolo?: string; nomeGenere?: string; nomeAttore?: string; nomeRegista?: string }): Observable<FilmResponse[]> {
+  //Utilizziamo un oggetto per i filtri, rispecchiando i @RequestParam del backend
+  esploraCatalogo(filtri?: { titolo?: string; nomeGenere?: string; nomeAttore?: string; nomeRegista?: string; anno?: number; prezzoMax?: number }): Observable<FilmResponse[]> {
     let params = new HttpParams();
 
     if (filtri) {
@@ -21,6 +21,8 @@ export class FilmService {
       if (filtri.nomeGenere) params = params.set('nomeGenere', filtri.nomeGenere);
       if (filtri.nomeAttore) params = params.set('nomeAttore', filtri.nomeAttore);
       if (filtri.nomeRegista) params = params.set('nomeRegista', filtri.nomeRegista);
+      if (filtri.anno) params = params.set('anno', filtri.anno.toString());
+      if (filtri.prezzoMax) params = params.set('prezzoMax', filtri.prezzoMax.toString());
     }
 
     return this.http.get<FilmResponse[]>(this.API_URL, { params });

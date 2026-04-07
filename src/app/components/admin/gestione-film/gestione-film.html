@@ -155,12 +155,13 @@
       <div class="form-group">
         <div class="label-with-action">
           <label>Generi</label>
-          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('genere')" title="Crea">
-            + Nuovo
-          </button>
+          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('genere')" title="Crea">+ Nuovo</button>
         </div>
+
+        <input type="text" class="local-search-input" placeholder="Cerca genere..." [(ngModel)]="ricercaGenereTerm" [ngModelOptions]="{standalone: true}">
+
         <div class="custom-multi-select-list">
-          <div class="list-item" *ngFor="let g of generi" (click)="toggleSelection('idGeneri', g.id)">
+          <div class="list-item" *ngFor="let g of generiFiltrati" (click)="toggleSelection('idGeneri', g.id)">
             <div class="item-content">
               <input type="checkbox" [checked]="isItemSelected('idGeneri', g.id)" (click)="$event.stopPropagation(); toggleSelection('idGeneri', g.id)">
               <span>{{ g.nome }}</span>
@@ -173,12 +174,13 @@
       <div class="form-group">
         <div class="label-with-action">
           <label>Registi</label>
-          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('regista')" title="Crea">
-            + Nuovo
-          </button>
+          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('regista')" title="Crea">+ Nuovo</button>
         </div>
+
+        <input type="text" class="local-search-input" placeholder="Cerca regista..." [(ngModel)]="ricercaRegistaTerm" [ngModelOptions]="{standalone: true}">
+
         <div class="custom-multi-select-list">
-          <div class="list-item" *ngFor="let r of registi" (click)="toggleSelection('idRegisti', r.id)">
+          <div class="list-item" *ngFor="let r of registiFiltrati" (click)="toggleSelection('idRegisti', r.id)">
             <div class="item-content">
               <input type="checkbox" [checked]="isItemSelected('idRegisti', r.id)" (click)="$event.stopPropagation(); toggleSelection('idRegisti', r.id)">
               <span>{{ r.nome }} {{ r.cognome }}</span>
@@ -191,12 +193,13 @@
       <div class="form-group span-2">
         <div class="label-with-action">
           <label>Attori</label>
-          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('attore')" title="Crea">
-            + Nuovo
-          </button>
+          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('attore')" title="Crea">+ Nuovo</button>
         </div>
+
+        <input type="text" class="local-search-input" placeholder="Cerca attore..." [(ngModel)]="ricercaAttoreTerm" [ngModelOptions]="{standalone: true}">
+
         <div class="custom-multi-select-list">
-          <div class="list-item" *ngFor="let a of attori" (click)="toggleSelection('idAttori', a.id)">
+          <div class="list-item" *ngFor="let a of attoriFiltrati" (click)="toggleSelection('idAttori', a.id)">
             <div class="item-content">
               <input type="checkbox" [checked]="isItemSelected('idAttori', a.id)" (click)="$event.stopPropagation(); toggleSelection('idAttori', a.id)">
               <span>{{ a.nome }} {{ a.cognome }}</span>
