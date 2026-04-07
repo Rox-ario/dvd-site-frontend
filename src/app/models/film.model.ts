@@ -9,7 +9,7 @@ export interface FilmResponse {
   anno: number;
   durataMinuti: number;
   stock: number;
-  isAttivo: boolean;
+  attivo: boolean;
   urlImmagine: string;
 }
 

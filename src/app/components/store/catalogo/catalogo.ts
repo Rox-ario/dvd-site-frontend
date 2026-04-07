@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -50,7 +50,8 @@ export class CatalogoComponent implements OnInit {
     private cartService: CartService,
     private clienteService: ClienteService, // Iniettato
     private authService: AuthService,        // Iniettato
-    private catalogoService: AdminCatalogoService
+    private catalogoService: AdminCatalogoService,
+    private cdr: ChangeDetectorRef
   ) {
     // Definizione di tutti i criteri di ricerca
     this.filterForm = this.fb.group({
@@ -145,13 +146,20 @@ export class CatalogoComponent implements OnInit {
   }
 
   // Funzione per il carrello
-  aggiungiAlCarrello(film: FilmResponse): void {
+  aggiungiAlCarrello(film: FilmResponse, event: Event): void {
+    // Previene comportamenti anomali bloccando la propagazione del click sulla card
+    event.preventDefault();
+    event.stopPropagation();
+
     this.cartService.aggiungiAlCarrello(film);
 
     // Feedback visivo
     this.aggiuntiDiRecente.add(film.idFilm);
+    this.cdr.detectChanges(); // FORZA IL RICALCOLO DEL DOM PER MOSTRARE LA SPUNTA
+
     setTimeout(() => {
       this.aggiuntiDiRecente.delete(film.idFilm);
+      this.cdr.detectChanges(); // FORZA IL RICALCOLO PER RIPRISTINARE IL PULSANTE
     }, 2000);
   }
 

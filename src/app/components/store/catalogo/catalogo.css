@@ -140,3 +140,8 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cur
   color: #ffffff !important; /* Forza il bianco anche quando è attivo */
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
 }
+
+.btn-success {
+  background-color: #059669 !important;
+  color: white !important;
+}

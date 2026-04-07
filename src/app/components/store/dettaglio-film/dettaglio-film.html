@@ -12,7 +12,7 @@
         <button
           *ngIf="!isAdmin"
           class="btn-primary-large"
-          [disabled]="film.isAttivo === false || film.stock === 0"
+          [disabled]="!film.attivo || film.stock === 0"
           (click)="aggiungiAlCarrello()"
           [class.success]="aggiuntoDiRecente">
 

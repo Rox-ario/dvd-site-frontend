@@ -96,10 +96,6 @@
     <div class="movie-grid">
       <article class="movie-card" *ngFor="let film of filmList">
 
-        <div class="badge-overlay" *ngIf="film.isAttivo === false || film.stock === 0">
-          Esaurito
-        </div>
-
         <div class="card-img-container">
           <a [routerLink]="['/dettaglio', film.idFilm]">
             <img [src]="film.urlImmagine" [alt]="'Locandina di ' + film.titolo" loading="lazy">
@@ -120,11 +116,15 @@
 
           <p class="movie-price">{{ film.prezzo | currency:'EUR':'symbol':'1.2-2' }}</p>
 
+          <div class="badge-overlay" *ngIf="!film.attivo || film.stock === 0">
+            Esaurito
+          </div>
+
           <button
             *ngIf="!isAdmin"
             class="btn-primary"
-            [disabled]="!film.isAttivo || film.stock === 0"
-            (click)="aggiungiAlCarrello(film)"
+            [disabled]="!film.attivo || film.stock === 0"
+            (click)="aggiungiAlCarrello(film, $event)"
             [class.btn-success]="aggiuntiDiRecente.has(film.idFilm)">
 
             <span *ngIf="!aggiuntiDiRecente.has(film.idFilm)">Aggiungi al Carrello</span>
