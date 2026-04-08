@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import { AuthService } from '../../../services/auth';
 import { Ruolo } from '../../../models/auth.model';
 
@@ -20,12 +20,20 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     // Definizione rigorosa del form
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
+    });
+  }
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['avviso'] === 'carrello') {
+        this.errorMessage = "Per favore, accedi o registrati per aggiungere articoli al carrello.";
+      }
     });
   }
 
