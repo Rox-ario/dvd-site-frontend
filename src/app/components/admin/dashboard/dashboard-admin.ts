@@ -16,7 +16,6 @@ export class DashboardAdminComponent implements OnInit {
   ordini: OrdineResponse[] = [];
   ordiniFiltrati: OrdineResponse[] = [];
   isLoading = true;
-  errorMessage = '';
 
   // Metriche calcolate
   totaleIncassato = 0;
@@ -24,6 +23,9 @@ export class DashboardAdminComponent implements OnInit {
 
   statoSelezionato = '';
   statiDisponibili = ['IN_ELABORAZIONE', 'SPEDITO', 'CONSEGNATO', 'ANNULLATO'];
+
+  errorMessage = '';
+  successMessage = '';
 
   constructor(
     private ordineService: OrdineService,
@@ -74,21 +76,49 @@ export class DashboardAdminComponent implements OnInit {
     }
   }
 
-  cambiaStato(idOrdine: number, evento: Event) {
+  cambiaStato(ordine: OrdineResponse, evento: Event) {
     const selectElement = evento.target as HTMLSelectElement;
     const nuovoStato = selectElement.value;
+    const vecchioStato = ordine.stato;
 
-    this.ordineService.aggiornaStatoOrdine(idOrdine, nuovoStato).subscribe({
+    // Puliamo i messaggi precedenti
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (!confirm(`Attenzione: Stai per cambiare lo stato dell'ordine #${ordine.numeroOrdine} da ${vecchioStato.replace('_', ' ')} a ${nuovoStato.replace('_', ' ')}. Vuoi procedere?`)) {
+      selectElement.value = vecchioStato;
+      return;
+    }
+
+    this.ordineService.aggiornaStatoOrdine(ordine.numeroOrdine, nuovoStato).subscribe({
       next: (ordineAggiornato) => {
-        const index = this.ordini.findIndex(o => o.numeroOrdine === idOrdine);
+        const index = this.ordini.findIndex(o => o.numeroOrdine === ordine.numeroOrdine);
         if (index !== -1) {
           this.ordini[index] = ordineAggiornato;
-          this.calcolaStatistiche(); // Ricalcola se annulliamo un ordine
+          this.calcolaStatistiche();
+
+          // Mostriamo il successo a schermo invece che con un alert
+          this.successMessage = `Stato dell'ordine #${ordine.numeroOrdine} aggiornato in ${nuovoStato.replace('_', ' ')}.`;
+          this.cdr.detectChanges();
+
+          // Nascondiamo il messaggio dopo 3.5 secondi
+          setTimeout(() => {
+            this.successMessage = '';
+            this.cdr.detectChanges();
+          }, 3500);
         }
       },
       error: (err) => {
-        alert("Errore durante l'aggiornamento: " + (err.error?.message || "Riprova."));
-        this.caricaOrdini(); // Ripristina la UI allo stato precedente
+        // RIMOSSO L'ALERT NATIVO! Passiamo il testo alla variabile UI
+        this.errorMessage = "Errore durante l'aggiornamento: " + (err.error?.message || "Riprova.");
+        selectElement.value = vecchioStato; // Rollback visivo in caso di errore
+        this.cdr.detectChanges();
+
+        // Nascondiamo l'errore dopo 3.5 secondi
+        setTimeout(() => {
+          this.errorMessage = '';
+          this.cdr.detectChanges();
+        }, 3500);
       }
     });
   }

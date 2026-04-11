@@ -33,6 +33,8 @@ export class LoginComponent {
     this.route.queryParams.subscribe(params => {
       if (params['avviso'] === 'carrello') {
         this.errorMessage = "Per favore, accedi o registrati per aggiungere articoli al carrello.";
+      } else if (params['avviso'] === 'scaduta') {
+        this.errorMessage = "La tua sessione è scaduta per inattività. Accedi di nuovo per continuare.";
       }
     });
   }

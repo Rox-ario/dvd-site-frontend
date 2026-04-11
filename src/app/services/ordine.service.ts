@@ -33,4 +33,8 @@ export class OrdineService {
     const params = new HttpParams().set('nuovoStato', nuovoStato);
     return this.http.patch<OrdineResponse>(`${this.API_URL}/${idOrdine}/stato`, null, { params });
   }
+
+  annullaMioOrdine(idOrdine: number): Observable<OrdineResponse> {
+    return this.http.post<OrdineResponse>(`${this.API_URL}/me/${idOrdine}/annulla`, {});
+  }
 }

@@ -285,3 +285,34 @@
   border-top: 1px solid #e5e7eb; /* Separa leggermente l'input dalla lista */
   /* Mantieni il resto delle tue regole (height: 180px, ecc.) */
 }
+
+.alert-success-custom {
+  background-color: #ecfdf5; /* Verde chiarissimo */
+  color: #059669;           /* Testo verde acceso */
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #10b981;
+  text-align: center;
+  font-weight: 600;
+  animation: slideDownFade 0.3s ease-out;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.error-banner {
+  background-color: #fef2f2;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #ef4444;
+  text-align: center;
+  font-weight: 600;
+  animation: slideDownFade 0.3s ease-out;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

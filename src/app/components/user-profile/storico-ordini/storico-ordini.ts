@@ -40,5 +40,29 @@ export class StoricoOrdiniComponent implements OnInit {
       }
     });
   }
+
+  annullaOrdine(idOrdine: number) {
+    if (!confirm('Sei sicuro di voler annullare questo ordine e richiedere il rimborso?')) {
+      return;
+    }
+
+    this.isLoading = true;
+    this.ordineService.annullaMioOrdine(idOrdine).subscribe({
+      next: (ordineAggiornato) => {
+        const index = this.ordini.findIndex(o => o.numeroOrdine === idOrdine);
+        if (index !== -1) {
+          this.ordini[index] = ordineAggiornato;
+        }
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        alert('Ordine annullato. Il rimborso è stato avviato.');
+      },
+      error: (err) => {
+        this.isLoading = false;
+        alert(err.error?.message || err.error || "Impossibile annullare l'ordine.");
+        this.cdr.detectChanges();
+      }
+    });
+  }
 }
 

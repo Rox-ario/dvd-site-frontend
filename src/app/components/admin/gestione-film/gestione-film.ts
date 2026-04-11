@@ -130,6 +130,8 @@ export class GestioneFilmComponent implements OnInit {
   salvaFilm() {
     if (this.filmForm.invalid) return;
     this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
 
     const rawValue = this.filmForm.value;
     const requestData: CreaFilmRequest = {
@@ -139,8 +141,9 @@ export class GestioneFilmComponent implements OnInit {
       idRegisti: rawValue.idRegisti.map(Number)
     };
 
-    const operazione = this.filmInModificaId
-      ? this.filmService.aggiornaFilm(this.filmInModificaId, requestData)
+    const isModifica = !!this.filmInModificaId; // Salviamo lo stato prima di resettarlo
+    const operazione = isModifica
+      ? this.filmService.aggiornaFilm(this.filmInModificaId!, requestData)
       : this.filmService.creaFilm(requestData);
 
     operazione.subscribe({
@@ -148,26 +151,63 @@ export class GestioneFilmComponent implements OnInit {
         this.isLoading = false;
         this.mostraForm = false;
 
-        // Ecco il feedback positivo esplicito che mancava
-        alert("Operazione completata! Il film è stato salvato con successo 🍿");
+        // Feedback contestuale
+        this.successMessage = isModifica
+          ? "Modifica salvata con successo! ✏️"
+          : "Nuovo film aggiunto al catalogo! 🍿";
 
-        this.caricaFilm(); // Ricarica la lista dal backend
-        this.cdr.detectChanges(); // <-- Forza l'aggiornamento grafico immediato e previene i doppi click
+        this.caricaFilm();
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.successMessage = '';
+          this.cdr.detectChanges();
+        }, 3500);
       },
       error: (err) => {
         this.isLoading = false;
-        alert("Errore durante il salvataggio: " + (err.error?.message || "Riprova."));
+        this.errorMessage = "Errore durante il salvataggio: " + (err.error?.message || "Riprova.");
         this.cdr.detectChanges();
       }
     });
   }
 
+  eliminaFilm(id: number, titolo: string) {
+    if (confirm(`Sei sicuro di voler disattivare il film "${titolo}"?`)) {
+      this.filmService.eliminaFilm(id).subscribe(() => {
+        this.successMessage = `Il film "${titolo}" è stato rimosso dal catalogo. 🗑️`;
+        this.caricaFilm();
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.successMessage = '';
+          this.cdr.detectChanges();
+        }, 3500);
+      });
+    }
+  }
+
   apriFormModifica(film: FilmResponse) {
     this.filmInModificaId = film.idFilm;
 
-    // Per mappare le stringhe del DTO di risposta agli ID richiesti dal form,
-    // in un'app reale dovremmo fare un match per nome, o farsi mandare gli ID dal backend.
-    // Qui per semplicità azzeriamo le selezioni multiple, richiedendo di reinserirle.
+    // 1. Ricostruiamo gli ID dei Generi
+    // Filtriamo la lista completa dei generi cercando quelli il cui nome è incluso nell'array di stringhe del film.
+    const idGeneriEstratti = film.genere
+      ? this.generi.filter(g => film.genere.includes(g.nome)).map(g => g.id)
+      : [];
+
+    // 2. Ricostruiamo gli ID dei Registi
+    // Ricreiamo la stringa "Nome Cognome" per fare il match con quanto restituito dal backend
+    const idRegistiEstratti = film.registi
+      ? this.registi.filter(r => film.registi.includes(`${r.nome} ${r.cognome}`)).map(r => r.id)
+      : [];
+
+    // 3. Ricostruiamo gli ID degli Attori
+    const idAttoriEstratti = film.attori
+      ? this.attori.filter(a => film.attori.includes(`${a.nome} ${a.cognome}`)).map(a => a.id)
+      : [];
+
+    // 4. Popoliamo il form con i dati completi
     this.filmForm.patchValue({
       titolo: film.titolo,
       anno: film.anno,
@@ -176,20 +216,17 @@ export class GestioneFilmComponent implements OnInit {
       stock: film.stock,
       trama: film.trama,
       urlImmagine: film.urlImmagine,
-      idGeneri: [], idAttori: [], idRegisti: []
+      idGeneri: idGeneriEstratti,
+      idAttori: idAttoriEstratti,
+      idRegisti: idRegistiEstratti
     });
+
     this.mostraForm = true;
   }
 
   annulla() {
     this.mostraForm = false;
     this.filmInModificaId = null;
-  }
-
-  eliminaFilm(id: number, titolo: string) {
-    if (confirm(`Sei sicuro di voler disattivare il film "${titolo}"?`)) {
-      this.filmService.eliminaFilm(id).subscribe(() => this.caricaFilm());
-    }
   }
 
   // Stato per la creazione rapida
@@ -338,8 +375,10 @@ export class GestioneFilmComponent implements OnInit {
     }
   }
   protected errorMessage: any;
+  successMessage = '';
 
-  apriFormCreazione() {
+  apriFormCreazione()
+  {
     this.filmInModificaId = null;
     this.filmForm.reset({ anno: new Date().getFullYear(), prezzo: 0 }); // Valori default puliti
     this.mostraForm = true;
