@@ -25,11 +25,17 @@
 
           <button
             *ngIf="ordine.stato === 'IN_ELABORAZIONE'"
-            class="btn-outline text-danger"
-            style="font-size: 0.8rem; padding: 0.3rem 0.6rem; border-color: #f87171;"
-            (click)="annullaOrdine(ordine.numeroOrdine)">
-            Annulla e chiedi rimborso
+            class="btn-cancel-order"
+            [disabled]="annullamentoInCorso.has(ordine.numeroOrdine)"
+            (click)="annullaOrdine(ordine.numeroOrdine)"
+            title="Annulla l'ordine e richiedi un rimborso completo">
+            <span class="btn-cancel-icon" *ngIf="!annullamentoInCorso.has(ordine.numeroOrdine)">✕</span>
+            <span class="btn-cancel-spinner" *ngIf="annullamentoInCorso.has(ordine.numeroOrdine)"></span>
+            {{ annullamentoInCorso.has(ordine.numeroOrdine) ? 'Annullamento...' : 'Annulla ordine' }}
           </button>
+          <span class="cancel-hint" *ngIf="ordine.stato === 'IN_ELABORAZIONE' && !annullamentoInCorso.has(ordine.numeroOrdine)">
+            Puoi annullare finché è in elaborazione
+          </span>
         </div>
       </div>
 

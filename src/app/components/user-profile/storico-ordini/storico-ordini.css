@@ -30,3 +30,74 @@
 .titolo { flex: 1; font-weight: 500; color: #1f2937; }
 .prezzo { font-weight: 500; color: #4b5563; }
 
+/* Cancel Order Button */
+.btn-cancel-order {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #b91c1c;
+  background-color: #fef2f2;
+  border: 1.5px solid #fca5a5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.btn-cancel-order:hover:not(:disabled) {
+  background-color: #fee2e2;
+  border-color: #f87171;
+  color: #991b1b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.btn-cancel-order:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-cancel-order:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-cancel-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #fecaca;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.btn-cancel-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fecaca;
+  border-top-color: #b91c1c;
+  border-radius: 50%;
+  animation: cancel-spin 0.7s linear infinite;
+}
+
+@keyframes cancel-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cancel-hint {
+  display: block;
+  font-size: 0.72rem;
+  color: #9ca3af;
+  font-style: italic;
+  margin-top: 0.15rem;
+}
+
