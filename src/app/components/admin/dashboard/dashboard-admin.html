@@ -22,12 +22,24 @@
     </div>
   </div>
 
-  <div class="filters-section">
-    <label for="filtroStato">Filtra la vista:</label>
-    <select id="filtroStato" [(ngModel)]="statoSelezionato" (change)="applicaFiltro()">
-      <option value="">Mostra Tutti</option>
-      <option *ngFor="let stato of statiDisponibili" [value]="stato">{{ stato.replace('_', ' ') }}</option>
-    </select>
+  <div class="filters-section" style="display: flex; gap: 2rem;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <label for="filtroStato">Filtra la vista:</label>
+      <select id="filtroStato" [(ngModel)]="statoSelezionato" (change)="applicaFiltro()">
+        <option value="">Mostra Tutti</option>
+        <option *ngFor="let stato of statiDisponibili" [value]="stato">{{ stato.replace('_', ' ') }}</option>
+      </select>
+    </div>
+
+    <div style="width: 1px; background-color: #d1d5db; align-self: stretch; margin: 0.25rem 0;"></div>
+
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <label for="ordinaData">Ordina per data:</label>
+      <select id="ordinaData" [(ngModel)]="ordinamentoData" (change)="applicaFiltro()">
+        <option value="DESC">Più recenti prima (↓)</option>
+        <option value="ASC">Più vecchi prima (↑)</option>
+      </select>
+    </div>
   </div>
 
 

@@ -24,6 +24,7 @@ export class DashboardAdminComponent implements OnInit {
 
   statoSelezionato = '';
   statiDisponibili = ['IN_ELABORAZIONE', 'SPEDITO', 'CONSEGNATO', 'ANNULLATO'];
+  ordinamentoData: 'DESC' | 'ASC' = 'DESC';
 
   constructor(
     private ordineService: OrdineService,
@@ -68,11 +69,26 @@ export class DashboardAdminComponent implements OnInit {
   }
 
   applicaFiltro() {
+    // 1. Filtro per stato
+    let risultato = [...this.ordini];
     if (this.statoSelezionato) {
-      this.ordiniFiltrati = this.ordini.filter(o => o.stato === this.statoSelezionato);
-    } else {
-      this.ordiniFiltrati = [...this.ordini];
+      risultato = risultato.filter(o => o.stato === this.statoSelezionato);
     }
+
+    // 2. Ordinamento per data
+    risultato.sort((a, b) => {
+      // Il backend invia LocalDateTime come stringa ISO, getTime() lo converte in millisecondi
+      const timeA = new Date(a.dataAcquisto).getTime();
+      const timeB = new Date(b.dataAcquisto).getTime();
+
+      if (this.ordinamentoData === 'ASC') {
+        return timeA - timeB; // Dal più vecchio al più recente
+      } else {
+        return timeB - timeA; // Dal più recente al più vecchio
+      }
+    });
+
+    this.ordiniFiltrati = risultato;
   }
 
   async cambiaStato(ordine: OrdineResponse, evento: Event) {
