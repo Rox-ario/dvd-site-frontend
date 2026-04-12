@@ -85,3 +85,20 @@
   <br><br>
   <a routerLink="/catalogo" class="back-link">Torna al catalogo sicuro</a>
 </div>
+
+<div class="similar-movies-section" *ngIf="filmSimili.length > 0">
+  <h3 class="section-title">Potrebbe piacerti anche...</h3>
+
+  <div class="similar-grid">
+    <article class="similar-card" *ngFor="let simile of filmSimili">
+      <a [routerLink]="['/dettaglio', simile.idFilm]">
+        <div class="similar-poster">
+          <img [src]="simile.urlImmagine" [alt]="'Locandina ' + simile.titolo">
+          <div class="similar-overlay" *ngIf="!simile.attivo || simile.stock === 0">Esaurito</div>
+        </div>
+        <h4 class="similar-title">{{ simile.titolo }}</h4>
+        <span class="similar-price">{{ simile.prezzo | currency:'EUR':'symbol':'1.2-2' }}</span>
+      </a>
+    </article>
+  </div>
+</div>

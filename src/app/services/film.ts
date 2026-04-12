@@ -43,4 +43,8 @@ export class FilmService {
   eliminaFilm(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
+
+  ottieniFilmSimili(id: number): Observable<FilmResponse[]> {
+    return this.http.get<FilmResponse[]>(`${this.API_URL}/${id}/simili`);
+  }
 }

@@ -33,19 +33,37 @@ export class DettaglioFilmComponent implements OnInit {
   ) {
   }
 
+  filmSimili: FilmResponse[] = [];
   ngOnInit(): void {
-    // Estrae l'ID dall'URL (es: /dettaglio/5)
-    const idParam = this.route.snapshot.paramMap.get('id');
-    const id = idParam ? Number(idParam) : null;
     this.isLoggedIn = this.authService.isLoggedIn();
     this.isAdmin = this.authService.isAdmin();
 
-    if (id) {
-      this.caricaDettaglio(id);
-    } else {
-      this.errorMessage = 'ID Film non valido o mancante.';
-      this.isLoading = false;
-    }
+    
+    this.route.paramMap.subscribe(params => {
+      const idParam = params.get('id');
+      const id = idParam ? Number(idParam) : null;
+
+      if (id) {
+        // Quando l'ID cambia (es. cliccando un film simile), ricarichiamo tutto
+        this.caricaDettaglio(id);
+        this.caricaFilmSimili(id);
+        // Scorri in alto in modo fluido al cambio pagina
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        this.errorMessage = 'ID Film non valido o mancante.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  caricaFilmSimili(id: number) {
+    this.filmService.ottieniFilmSimili(id).subscribe({
+      next: (simili) => {
+        this.filmSimili = simili;
+        this.cdr.detectChanges();
+      },
+      error: () => console.error('Impossibile caricare i film consigliati.')
+    });
   }
 
   caricaDettaglio(id: number) {
