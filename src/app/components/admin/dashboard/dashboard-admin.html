@@ -30,13 +30,7 @@
     </select>
   </div>
 
-  <div class="alert-success-custom" *ngIf="successMessage">
-    {{ successMessage }}
-  </div>
 
-  <div class="error-banner" *ngIf="errorMessage">
-    {{ errorMessage }}
-  </div>
   <div class="loader" *ngIf="isLoading">Sincronizzazione dati in corso...</div>
 
   <div class="table-container" *ngIf="!isLoading && ordini.length > 0">
@@ -64,7 +58,7 @@
           <select
             class="status-select"
             [ngClass]="ordine.stato.toLowerCase()"
-            [value]="ordine.stato"
+            [ngModel]="ordine.stato"
             (change)="cambiaStato(ordine, $event)">
             <option *ngFor="let stato of statiDisponibili" [value]="stato">
               {{ stato.replace('_', ' ') }}

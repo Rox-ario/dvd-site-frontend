@@ -1,0 +1,28 @@
+<div class="confirm-overlay" *ngIf="isOpen" (click)="onOverlayClick($event)">
+  <div class="confirm-modal" [ngClass]="'confirm-' + (data?.type || 'warning')">
+
+    <!-- Icon -->
+    <div class="confirm-icon-wrapper">
+      <div class="confirm-icon">
+        <span *ngIf="data?.type === 'danger'">🗑️</span>
+        <span *ngIf="data?.type === 'warning' || !data?.type">⚠️</span>
+        <span *ngIf="data?.type === 'info'">ℹ️</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <h3 class="confirm-title">{{ data?.title }}</h3>
+    <p class="confirm-message">{{ data?.message }}</p>
+
+    <!-- Actions -->
+    <div class="confirm-actions">
+      <button class="confirm-btn confirm-btn-cancel" (click)="onCancel()">
+        {{ data?.cancelText || 'Annulla' }}
+      </button>
+      <button class="confirm-btn confirm-btn-confirm" [ngClass]="'btn-type-' + (data?.type || 'warning')" (click)="onConfirm()">
+        {{ data?.confirmText || 'Conferma' }}
+      </button>
+    </div>
+
+  </div>
+</div>

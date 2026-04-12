@@ -2,6 +2,7 @@ import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrdineService } from '../../../services/ordine.service';
+import { NotificationService } from '../../../services/notification.service';
 import { OrdineResponse } from '../../../models/ordine.model';
 import {RouterLink} from '@angular/router';
 
@@ -24,11 +25,9 @@ export class DashboardAdminComponent implements OnInit {
   statoSelezionato = '';
   statiDisponibili = ['IN_ELABORAZIONE', 'SPEDITO', 'CONSEGNATO', 'ANNULLATO'];
 
-  errorMessage = '';
-  successMessage = '';
-
   constructor(
     private ordineService: OrdineService,
+    private notificationService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -50,7 +49,7 @@ export class DashboardAdminComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
-        this.errorMessage = 'Impossibile caricare il registro degli ordini dal server.';
+        this.notificationService.error('Impossibile caricare il registro degli ordini dal server.');
         this.isLoading = false;
         this.cdr.detectChanges();
       }
@@ -76,16 +75,22 @@ export class DashboardAdminComponent implements OnInit {
     }
   }
 
-  cambiaStato(ordine: OrdineResponse, evento: Event) {
+  async cambiaStato(ordine: OrdineResponse, evento: Event) {
     const selectElement = evento.target as HTMLSelectElement;
     const nuovoStato = selectElement.value;
     const vecchioStato = ordine.stato;
 
-    // Puliamo i messaggi precedenti
-    this.errorMessage = '';
-    this.successMessage = '';
+    // Mostra il dialog di conferma personalizzato
+    const conferma = await this.notificationService.confirm({
+      title: 'Conferma cambio stato',
+      message: `Stai per cambiare lo stato dell'ordine #${ordine.numeroOrdine} da "${vecchioStato.replace('_', ' ')}" a "${nuovoStato.replace('_', ' ')}". Vuoi procedere?`,
+      confirmText: 'Conferma',
+      cancelText: 'Annulla',
+      type: nuovoStato === 'ANNULLATO' ? 'danger' : 'warning'
+    });
 
-    if (!confirm(`Attenzione: Stai per cambiare lo stato dell'ordine #${ordine.numeroOrdine} da ${vecchioStato.replace('_', ' ')} a ${nuovoStato.replace('_', ' ')}. Vuoi procedere?`)) {
+    if (!conferma) {
+      // L'utente ha annullato: ripristiniamo il valore precedente nel select
       selectElement.value = vecchioStato;
       return;
     }
@@ -96,31 +101,21 @@ export class DashboardAdminComponent implements OnInit {
         if (index !== -1) {
           this.ordini[index] = ordineAggiornato;
           this.calcolaStatistiche();
+          this.applicaFiltro();
 
-          // Mostriamo il successo a schermo invece che con un alert
-          this.successMessage = `Stato dell'ordine #${ordine.numeroOrdine} aggiornato in ${nuovoStato.replace('_', ' ')}.`;
+          this.notificationService.success(
+            `Stato dell'ordine #${ordine.numeroOrdine} aggiornato in "${nuovoStato.replace('_', ' ')}".`
+          );
           this.cdr.detectChanges();
-
-          // Nascondiamo il messaggio dopo 3.5 secondi
-          setTimeout(() => {
-            this.successMessage = '';
-            this.cdr.detectChanges();
-          }, 3500);
         }
       },
       error: (err) => {
-        // RIMOSSO L'ALERT NATIVO! Passiamo il testo alla variabile UI
-        this.errorMessage = "Errore durante l'aggiornamento: " + (err.error?.message || "Riprova.");
+        this.notificationService.error(
+          "Errore durante l'aggiornamento: " + (err.error?.message || 'Riprova.')
+        );
         selectElement.value = vecchioStato; // Rollback visivo in caso di errore
         this.cdr.detectChanges();
-
-        // Nascondiamo l'errore dopo 3.5 secondi
-        setTimeout(() => {
-          this.errorMessage = '';
-          this.cdr.detectChanges();
-        }, 3500);
       }
     });
   }
 }
-

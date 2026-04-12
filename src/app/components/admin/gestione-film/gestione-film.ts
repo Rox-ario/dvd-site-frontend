@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { FilmService } from '../../../services/film';
 import { AdminCatalogoService } from '../../../services/admin-catalogo.service';
+import { NotificationService } from '../../../services/notification.service';
 import { FilmResponse, CreaFilmRequest } from '../../../models/film.model';
 import { Genere, Attore, Regista } from '../../../models/catalogo.model';
 
@@ -36,6 +37,7 @@ export class GestioneFilmComponent implements OnInit {
     private fb: FormBuilder,
     private filmService: FilmService,
     private adminCatalogoService: AdminCatalogoService,
+    private notificationService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {
     this.filmForm = this.fb.group({
@@ -130,8 +132,6 @@ export class GestioneFilmComponent implements OnInit {
   salvaFilm() {
     if (this.filmForm.invalid) return;
     this.isLoading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
 
     const rawValue = this.filmForm.value;
     const requestData: CreaFilmRequest = {
@@ -141,7 +141,7 @@ export class GestioneFilmComponent implements OnInit {
       idRegisti: rawValue.idRegisti.map(Number)
     };
 
-    const isModifica = !!this.filmInModificaId; // Salviamo lo stato prima di resettarlo
+    const isModifica = !!this.filmInModificaId;
     const operazione = isModifica
       ? this.filmService.aggiornaFilm(this.filmInModificaId!, requestData)
       : this.filmService.creaFilm(requestData);
@@ -151,38 +151,43 @@ export class GestioneFilmComponent implements OnInit {
         this.isLoading = false;
         this.mostraForm = false;
 
-        // Feedback contestuale
-        this.successMessage = isModifica
-          ? "Modifica salvata con successo! ✏️"
-          : "Nuovo film aggiunto al catalogo! 🍿";
+        // Toast notification
+        if (isModifica) {
+          this.notificationService.success('Modifica salvata con successo! ✏️');
+        } else {
+          this.notificationService.success('Nuovo film aggiunto al catalogo! 🍿');
+        }
 
         this.caricaFilm();
         this.cdr.detectChanges();
-
-        setTimeout(() => {
-          this.successMessage = '';
-          this.cdr.detectChanges();
-        }, 3500);
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = "Errore durante il salvataggio: " + (err.error?.message || "Riprova.");
+        this.notificationService.error('Errore durante il salvataggio: ' + (err.error?.message || 'Riprova.'));
         this.cdr.detectChanges();
       }
     });
   }
 
-  eliminaFilm(id: number, titolo: string) {
-    if (confirm(`Sei sicuro di voler disattivare il film "${titolo}"?`)) {
-      this.filmService.eliminaFilm(id).subscribe(() => {
-        this.successMessage = `Il film "${titolo}" è stato rimosso dal catalogo. 🗑️`;
-        this.caricaFilm();
-        this.cdr.detectChanges();
+  async eliminaFilm(id: number, titolo: string) {
+    const conferma = await this.notificationService.confirm({
+      title: 'Conferma eliminazione',
+      message: `Sei sicuro di voler disattivare il film "${titolo}"? Il film non sarà più visibile nel catalogo.`,
+      confirmText: 'Elimina',
+      cancelText: 'Annulla',
+      type: 'danger'
+    });
 
-        setTimeout(() => {
-          this.successMessage = '';
+    if (conferma) {
+      this.filmService.eliminaFilm(id).subscribe({
+        next: () => {
+          this.notificationService.success(`Il film "${titolo}" è stato rimosso dal catalogo. 🗑️`);
+          this.caricaFilm();
           this.cdr.detectChanges();
-        }, 3500);
+        },
+        error: (err) => {
+          this.notificationService.error('Errore durante l\'eliminazione: ' + (err.error?.message || 'Riprova.'));
+        }
       });
     }
   }
@@ -191,13 +196,11 @@ export class GestioneFilmComponent implements OnInit {
     this.filmInModificaId = film.idFilm;
 
     // 1. Ricostruiamo gli ID dei Generi
-    // Filtriamo la lista completa dei generi cercando quelli il cui nome è incluso nell'array di stringhe del film.
     const idGeneriEstratti = film.genere
       ? this.generi.filter(g => film.genere.includes(g.nome)).map(g => g.id)
       : [];
 
     // 2. Ricostruiamo gli ID dei Registi
-    // Ricreiamo la stringa "Nome Cognome" per fare il match con quanto restituito dal backend
     const idRegistiEstratti = film.registi
       ? this.registi.filter(r => film.registi.includes(`${r.nome} ${r.cognome}`)).map(r => r.id)
       : [];
@@ -252,14 +255,15 @@ export class GestioneFilmComponent implements OnInit {
     if (tipo === 'genere') {
       this.adminCatalogoService.creaGenere({ nome: nome.trim() }).subscribe({
         next: (nuovo) => {
-          this.generi = [...this.generi, nuovo]; // Aggiorna elenco dropdown
+          this.generi = [...this.generi, nuovo];
           const attuali = this.filmForm.value.idGeneri || [];
-          this.filmForm.patchValue({ idGeneri: [...attuali, nuovo.id] }); // Auto-seleziona
+          this.filmForm.patchValue({ idGeneri: [...attuali, nuovo.id] });
           this.annullaCreazioneRapida();
-          this.cdr.detectChanges(); // <-- Forza l'aggiornamento della UI al primo colpo
+          this.notificationService.success(`Genere "${nuovo.nome}" creato con successo!`);
+          this.cdr.detectChanges();
         },
         error: (err) => {
-          alert("Errore: " + (err.error?.message || "Impossibile creare il genere."));
+          this.notificationService.error('Errore: ' + (err.error?.message || 'Impossibile creare il genere.'));
           this.cdr.detectChanges();
         }
       });
@@ -270,10 +274,11 @@ export class GestioneFilmComponent implements OnInit {
           const attuali = this.filmForm.value.idRegisti || [];
           this.filmForm.patchValue({ idRegisti: [...attuali, nuovo.id] });
           this.annullaCreazioneRapida();
-          this.cdr.detectChanges(); // <-- Forza l'aggiornamento
+          this.notificationService.success(`Regista "${nuovo.nome} ${nuovo.cognome}" creato con successo!`);
+          this.cdr.detectChanges();
         },
         error: (err) => {
-          alert("Errore: " + (err.error?.message || "Impossibile creare il regista."));
+          this.notificationService.error('Errore: ' + (err.error?.message || 'Impossibile creare il regista.'));
           this.cdr.detectChanges();
         }
       });
@@ -284,10 +289,11 @@ export class GestioneFilmComponent implements OnInit {
           const attuali = this.filmForm.value.idAttori || [];
           this.filmForm.patchValue({ idAttori: [...attuali, nuovo.id] });
           this.annullaCreazioneRapida();
-          this.cdr.detectChanges(); // <-- Forza l'aggiornamento
+          this.notificationService.success(`Attore "${nuovo.nome} ${nuovo.cognome}" creato con successo!`);
+          this.cdr.detectChanges();
         },
         error: (err) => {
-          alert("Errore: " + (err.error?.message || "Impossibile creare l'attore."));
+          this.notificationService.error('Errore: ' + (err.error?.message || "Impossibile creare l'attore."));
           this.cdr.detectChanges();
         }
       });
@@ -321,47 +327,72 @@ export class GestioneFilmComponent implements OnInit {
     control.markAsDirty(); // Segnala che il form è stato modificato
   }
 
-  eliminaGenere(id: number, nome: string, event: Event) {
-    event.stopPropagation(); // BLOCCA il click sulla riga sottostante
+  async eliminaGenere(id: number, nome: string, event: Event) {
+    event.stopPropagation();
 
-    if (!confirm(`Sei sicuro di voler eliminare DEFINITIVAMENTE il genere '${nome}' dal database? Questa azione non può essere annullata.`)) {
-      return;
-    }
+    const conferma = await this.notificationService.confirm({
+      title: 'Eliminazione definitiva',
+      message: `Sei sicuro di voler eliminare DEFINITIVAMENTE il genere "${nome}" dal database? Questa azione non può essere annullata.`,
+      confirmText: 'Elimina definitivamente',
+      cancelText: 'Annulla',
+      type: 'danger'
+    });
+
+    if (!conferma) return;
 
     this.adminCatalogoService.eliminaGenere(id).subscribe({
       next: () => {
-        // 1. Rimuovi dall'elenco locale per aggiornare la lista
         this.generi = this.generi.filter(g => g.id !== id);
-        // 2. Rimuovi dalla selezione nel form se era selezionato
         this.pulisciSelezioneSeEliminato('idGeneri', id);
+        this.notificationService.success(`Genere "${nome}" eliminato.`);
       },
-      error: (err) => alert("Errore durante l'eliminazione. Potrebbe essere utilizzato da alcuni film.")
+      error: () => this.notificationService.error("Errore durante l'eliminazione. Potrebbe essere utilizzato da alcuni film.")
     });
   }
 
-  eliminaRegista(id: number, nome: string, cognome: string, event: Event) {
+  async eliminaRegista(id: number, nome: string, cognome: string, event: Event) {
     event.stopPropagation();
-    if (!confirm(`Sei sicuro di voler eliminare DEFINITIVAMENTE il regista '${nome} ${cognome}'?`)) return;
+
+    const conferma = await this.notificationService.confirm({
+      title: 'Eliminazione definitiva',
+      message: `Sei sicuro di voler eliminare DEFINITIVAMENTE il regista "${nome} ${cognome}"?`,
+      confirmText: 'Elimina definitivamente',
+      cancelText: 'Annulla',
+      type: 'danger'
+    });
+
+    if (!conferma) return;
 
     this.adminCatalogoService.eliminaRegista(id).subscribe({
       next: () => {
         this.registi = this.registi.filter(r => r.id !== id);
         this.pulisciSelezioneSeEliminato('idRegisti', id);
+        this.notificationService.success(`Regista "${nome} ${cognome}" eliminato.`);
       },
-      error: () => alert("Impossibile eliminare.")
+      error: () => this.notificationService.error('Impossibile eliminare.')
     });
   }
 
-  eliminaAttore(id: number, nome: string, cognome: string, event: Event) {
+  async eliminaAttore(id: number, nome: string, cognome: string, event: Event) {
     event.stopPropagation();
-    if (!confirm(`Sei sicuro di voler eliminare DEFINITIVAMENTE l'attore '${nome} ${cognome}'?`)) return;
+
+    const conferma = await this.notificationService.confirm({
+      title: 'Eliminazione definitiva',
+      message: `Sei sicuro di voler eliminare DEFINITIVAMENTE l'attore "${nome} ${cognome}"?`,
+      confirmText: 'Elimina definitivamente',
+      cancelText: 'Annulla',
+      type: 'danger'
+    });
+
+    if (!conferma) return;
 
     this.adminCatalogoService.eliminaAttore(id).subscribe({
       next: () => {
         this.attori = this.attori.filter(a => a.id !== id);
         this.pulisciSelezioneSeEliminato('idAttori', id);
+        this.notificationService.success(`Attore "${nome} ${cognome}" eliminato.`);
       },
-      error: () => alert("Impossibile eliminare.")
+      error: () => this.notificationService.error('Impossibile eliminare.')
     });
   }
 
@@ -374,8 +405,6 @@ export class GestioneFilmComponent implements OnInit {
       control.setValue(current.filter((id: number) => id !== idEliminato));
     }
   }
-  protected errorMessage: any;
-  successMessage = '';
 
   apriFormCreazione()
   {
@@ -390,4 +419,3 @@ export class GestioneFilmComponent implements OnInit {
     this.cdr.detectChanges();
   }
 }
-
