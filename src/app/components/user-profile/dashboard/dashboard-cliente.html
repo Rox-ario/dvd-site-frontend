@@ -1,4 +1,4 @@
-<div class="profile-container">
+<div class="profile-container" [class.admin-mode]="isAdmin">
 
   <div class="loader-container" *ngIf="isLoading && !profilo">
     <div class="spinner"></div>
@@ -8,11 +8,13 @@
   <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
 
   <ng-container *ngIf="profilo">
-    <div class="profile-hero-card">
-      <div class="hero-banner"></div>
+    <div class="profile-hero-card" [class.admin-hero]="isAdmin">
+      <div class="hero-banner">
+        <span class="hero-banner-label" *ngIf="isAdmin">PANNELLO AMMINISTRATORE</span>
+      </div>
 
       <div class="hero-body">
-        <div class="avatar-squircle">
+        <div class="avatar-squircle" [class.admin-avatar]="isAdmin">
           {{ getIniziale() }}
         </div>
 
@@ -28,8 +30,8 @@
           </div>
 
           <div class="user-badges">
-            <span class="badge role-badge">{{ profilo.ruolo }}</span>
-            <span class="badge points-badge">⭐ {{ getPuntiFedelta() }} Punti</span>
+            <span class="badge role-badge" [class.admin-role-badge]="isAdmin">{{ profilo.ruolo }}</span>
+            <span class="badge points-badge" *ngIf="!isAdmin">⭐ {{ getPuntiFedelta() }} Punti</span>
           </div>
         </div>
       </div>
@@ -57,14 +59,38 @@
       </form>
     </div>
 
+    <!-- ============================== -->
+    <!-- TABS NAVIGATION                -->
+    <!-- ============================== -->
     <div class="tabs-nav">
+
+      <!-- ADMIN TABS -->
+      <ng-container *ngIf="isAdmin">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'pannello'"
+          (click)="setTab('pannello')">
+          <span class="tab-icon">🎛️</span> Pannello di Controllo
+        </button>
+        <a
+          routerLink="/admin/gestione-film"
+          class="tab-btn tab-link">
+          <span class="tab-icon">🎬</span> Gestione Film
+        </a>
+      </ng-container>
+
+      <!-- SOLO CLIENTE -->
       <button
+        *ngIf="!isAdmin"
         class="tab-btn"
         [class.active]="activeTab === 'ordini'"
         (click)="setTab('ordini')">
         <span class="tab-icon">📦</span> Storico Ordini
       </button>
+
+      <!-- SOLO CLIENTE -->
       <button
+        *ngIf="!isAdmin"
         class="tab-btn"
         [class.active]="activeTab === 'preferiti'"
         (click)="setTab('preferiti')">
@@ -72,9 +98,96 @@
       </button>
     </div>
 
+    <!-- ============================== -->
+    <!-- TAB CONTENT                    -->
+    <!-- ============================== -->
     <div class="tab-content-area">
 
-      <div *ngIf="activeTab === 'preferiti'" class="fade-in">
+      <!-- ADMIN: Pannello di Controllo -->
+      <div *ngIf="activeTab === 'pannello' && isAdmin" class="fade-in">
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Totale Incassato</h3>
+            <p class="stat-value text-success">{{ totaleIncassato | currency:'EUR':'symbol':'1.2-2' }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Volumi in Vendita</h3>
+            <p class="stat-value">{{ ordini.length }} <span class="small-text">Ordini Totali</span></p>
+          </div>
+          <div class="stat-card alert-card" [class.active]="ordiniDaSpedire > 0">
+            <h3>In Attesa di Spedizione</h3>
+            <p class="stat-value">{{ ordiniDaSpedire }}</p>
+          </div>
+        </div>
+
+        <div class="filters-section">
+          <div class="filter-group">
+            <label for="filtroStato">Filtra la vista:</label>
+            <select id="filtroStato" [(ngModel)]="statoSelezionato" (change)="applicaFiltro()">
+              <option value="">Mostra Tutti</option>
+              <option *ngFor="let stato of statiDisponibili" [value]="stato">{{ stato.replace('_', ' ') }}</option>
+            </select>
+          </div>
+
+          <div class="filter-divider"></div>
+
+          <div class="filter-group">
+            <label for="ordinaData">Ordina per data:</label>
+            <select id="ordinaData" [(ngModel)]="ordinamentoData" (change)="applicaFiltro()">
+              <option value="DESC">Più recenti prima (↓)</option>
+              <option value="ASC">Più vecchi prima (↑)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="loader" *ngIf="isLoadingAdmin">Sincronizzazione dati in corso...</div>
+
+        <div class="table-container" *ngIf="!isLoadingAdmin && ordini.length > 0">
+          <table class="admin-table">
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Data Acq.</th>
+              <th>Articoli</th>
+              <th>Incasso</th>
+              <th>Stato Spedizione</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let ordine of ordiniFiltrati">
+              <td class="fw-bold">#{{ ordine.numeroOrdine }}</td>
+              <td>{{ ordine.dataAcquisto | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <ul class="articoli-mini">
+                  <li *ngFor="let r of ordine.righe">{{ r.quantita }}x {{ r.titoloFilm }}</li>
+                </ul>
+              </td>
+              <td class="fw-bold">{{ ordine.totale | currency:'EUR':'symbol':'1.2-2' }}</td>
+              <td>
+                <select
+                  class="status-select"
+                  [ngClass]="ordine.stato.toLowerCase()"
+                  [ngModel]="ordine.stato"
+                  (change)="cambiaStato(ordine, $event)">
+                  <option *ngFor="let stato of statiDisponibili" [value]="stato">
+                    {{ stato.replace('_', ' ') }}
+                  </option>
+                </select>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="!isLoadingAdmin && ordini.length === 0">
+          <p>Il registro è vuoto. Nessuna transazione registrata.</p>
+        </div>
+
+      </div>
+
+      <!-- CLIENTE: Preferiti -->
+      <div *ngIf="activeTab === 'preferiti' && !isAdmin" class="fade-in">
         <div class="empty-state-dashed" *ngIf="preferitiDettagliati.length === 0">
           Non hai ancora aggiunto film ai preferiti.
         </div>
@@ -92,6 +205,7 @@
         </div>
       </div>
 
+      <!-- COMUNE: Storico Ordini -->
       <div *ngIf="activeTab === 'ordini'" class="fade-in">
         <app-storico-ordini></app-storico-ordini>
       </div>

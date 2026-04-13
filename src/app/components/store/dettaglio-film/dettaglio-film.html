@@ -86,6 +86,38 @@
   <a routerLink="/catalogo" class="back-link">Torna al catalogo sicuro</a>
 </div>
 
+<div class="reviews-section">
+  <h3>Recensioni dei Clienti</h3>
+
+  <div class="add-review-box" *ngIf="film?.puoRecensire">
+    <h4>Raccontaci la tua esperienza</h4>
+    <div class="star-rating">
+      <span *ngFor="let s of [1,2,3,4,5]"
+            (click)="votoSelezionato = s"
+            [class.active]="votoSelezionato >= s">★</span>
+    </div>
+    <textarea [(ngModel)]="nuovoCommento" placeholder="Scrivi qui la tua recensione..."></textarea>
+    <button class="btn-primary-large" style="width: auto;" (click)="inviaRecensione()">
+      Pubblica Recensione
+    </button>
+  </div>
+
+  <div class="reviews-list">
+    <div class="review-item" *ngFor="let r of film?.recensioni">
+      <div class="review-header">
+        <strong>{{ r.nomeCliente }}</strong>
+        <span class="stars">{{ '★'.repeat(r.stelle) }}{{ '☆'.repeat(5-r.stelle) }}</span>
+      </div>
+      <p>{{ r.commento }}</p>
+      <small>Recensito il {{ r.data | date:'dd MMMM yyyy' }}</small>
+    </div>
+
+    <div *ngIf="film?.recensioni?.length === 0" class="empty-state-dashed" style="padding: 2rem;">
+      <p>Nessuna recensione ancora. Sii il primo a condividere un'opinione!</p>
+    </div>
+  </div>
+</div>
+
 <div class="similar-movies-section" *ngIf="filmSimili.length > 0">
   <h3 class="section-title">Potrebbero piacerti anche...</h3>
 

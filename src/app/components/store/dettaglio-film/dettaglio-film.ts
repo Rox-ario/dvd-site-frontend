@@ -6,11 +6,13 @@ import { CartService } from '../../../services/cart';
 import { FilmResponse } from '../../../models/film.model';
 import { ClienteService } from '../../../services/cliente';
 import { AuthService } from '../../../services/auth';
+import {FormsModule} from '@angular/forms';
+import {NotificationService} from '../../../services/notification.service';
 
 @Component({
   selector: 'app-dettaglio-film',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './dettaglio-film.html',
   styleUrls: ['./dettaglio-film.css']
 })
@@ -29,7 +31,8 @@ export class DettaglioFilmComponent implements OnInit {
     public cartService: CartService,
     private cdr: ChangeDetectorRef,
     private clienteService: ClienteService, // Iniettato per i preferiti
-    private authService: AuthService
+    private authService: AuthService,
+    private notificationService: NotificationService
   ) {
   }
 
@@ -38,7 +41,7 @@ export class DettaglioFilmComponent implements OnInit {
     this.isLoggedIn = this.authService.isLoggedIn();
     this.isAdmin = this.authService.isAdmin();
 
-    
+
     this.route.paramMap.subscribe(params => {
       const idParam = params.get('id');
       const id = idParam ? Number(idParam) : null;
@@ -125,5 +128,34 @@ export class DettaglioFilmComponent implements OnInit {
         });
       }
     }
+  }
+
+  votoSelezionato = 5;
+  nuovoCommento = '';
+
+  inviaRecensione() {
+    if (!this.nuovoCommento.trim() || !this.film) return;
+
+    const payload = {
+      stelle: this.votoSelezionato,
+      commento: this.nuovoCommento
+    };
+
+    // Usiamo il servizio invece di this.http
+    this.filmService.inviaRecensione(this.film.idFilm, payload).subscribe({
+      next: (nuovaRecensione: any) => {
+        // Se il backend restituisce il DTO della recensione, lo aggiungiamo alla lista locale
+        if (!this.film!.recensioni) this.film!.recensioni = [];
+        this.film!.recensioni.unshift(nuovaRecensione);
+
+        this.film!.puoRecensire = false;
+        this.nuovoCommento = ''; // Reset del campo
+        this.notificationService.success("Grazie per la tua recensione! 🍿");
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.notificationService.error(err.error?.message || "Impossibile inviare la recensione.");
+      }
+    });
   }
 }

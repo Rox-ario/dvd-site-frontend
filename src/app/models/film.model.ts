@@ -11,6 +11,9 @@ export interface FilmResponse {
   stock: number;
   attivo: boolean;
   urlImmagine: string;
+  mediaStelle?: number;
+  recensioni?: Recensione[];
+  puoRecensire?: boolean;
 }
 
 export interface CreaFilmRequest
@@ -25,4 +28,11 @@ export interface CreaFilmRequest
   durataMinuti: number;
   stock: number;
   urlImmagine: string;
+}
+
+export interface Recensione {
+  nomeCliente: string;
+  stelle: number;
+  commento: string;
+  data: string;
 }

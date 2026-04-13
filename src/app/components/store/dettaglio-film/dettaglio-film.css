@@ -126,3 +126,76 @@
   font-weight: 700;
   color: #2563eb;
 }
+/* --- Sezione Recensioni --- */
+.reviews-section {
+  max-width: 1200px;
+  margin: 3rem auto;
+  padding: 2rem 1rem;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.reviews-section h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #111827;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 0.75rem;
+}
+
+/* Box per aggiungere recensione */
+.add-review-box {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 3rem;
+  border: 1px solid #e2e8f0;
+}
+
+.star-rating {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  font-size: 1.5rem;
+  color: #d1d5db;
+}
+
+.star-rating span { cursor: pointer; transition: color 0.2s; }
+.star-rating span.active { color: #f59e0b; }
+
+.add-review-box textarea {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  margin-bottom: 1rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+/* Lista Recensioni */
+.review-item {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.review-item:last-child { border-bottom: none; }
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.stars { color: #f59e0b; font-size: 0.9rem; letter-spacing: 2px; }
+
+.review-item p {
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0.5rem 0;
+}
+
+.review-item small { color: #9ca3af; }

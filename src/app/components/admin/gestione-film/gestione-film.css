@@ -16,6 +16,25 @@
   margin: 0 auto;
 }
 
+.btn-back-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+.btn-back-profile:hover {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
 /* --- Loader Standard --- */
 .global-loader { text-align: center; padding: 3rem; color: #6b7280; }
 .loading-infinite { font-size: 1.1rem; }

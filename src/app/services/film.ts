@@ -47,4 +47,8 @@ export class FilmService {
   ottieniFilmSimili(id: number): Observable<FilmResponse[]> {
     return this.http.get<FilmResponse[]>(`${this.API_URL}/${id}/simili`);
   }
+
+  inviaRecensione(idFilm: number, dati: { stelle: number; commento: string }): Observable<any> {
+    return this.http.post(`${this.API_URL}/${idFilm}/recensioni`, dati);
+  }
 }

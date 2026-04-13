@@ -63,14 +63,16 @@ export const routes: Routes = [
   },
 
   // 4. AREA ADMIN (Dashboard Gestionale)
-  // Altamente protetta: devi essere loggato E avere il ruolo ADMIN
+  // La dashboard admin è ora integrata nel profilo (/profilo).
+  // Manteniamo la gestione film come rotta separata e un redirect per backward compatibility.
   {
     path: 'admin',
     canActivate: [adminGuard],
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./components/admin/dashboard/dashboard-admin').then(m => m.DashboardAdminComponent)
+        redirectTo: '/profilo',
+        pathMatch: 'full'
       },
       {
         path: 'gestione-film',

@@ -6,11 +6,12 @@ import { AdminCatalogoService } from '../../../services/admin-catalogo.service';
 import { NotificationService } from '../../../services/notification.service';
 import { FilmResponse, CreaFilmRequest } from '../../../models/film.model';
 import { Genere, Attore, Regista } from '../../../models/catalogo.model';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-gestione-film',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './gestione-film.html',
   styleUrls: ['./gestione-film.css']
 })

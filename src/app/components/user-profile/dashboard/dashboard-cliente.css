@@ -7,6 +7,8 @@
   --slate-600: #475569;
   --slate-800: #1e293b;
   --slate-900: #0f172a;
+  --emerald-600: #059669;
+  --emerald-50: #ecfdf5;
 }
 
 .profile-container {
@@ -16,7 +18,11 @@
   font-family: 'Inter', sans-serif;
 }
 
-/* --- HERO CARD --- */
+.profile-container.admin-mode {
+  max-width: 1200px;
+}
+
+/* === HERO CARD === */
 .profile-hero-card {
   background: white;
   border-radius: 1.5rem;
@@ -29,6 +35,24 @@
 .hero-banner {
   height: 140px;
   background: linear-gradient(135deg, var(--indigo-600), var(--indigo-500));
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+}
+
+/* Admin banner styling */
+.admin-hero .hero-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, var(--indigo-600) 100%);
+}
+
+.hero-banner-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
 .hero-body {
@@ -52,6 +76,12 @@
   color: var(--indigo-600);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   border: 4px solid white;
+}
+
+.admin-avatar {
+  background: linear-gradient(135deg, #0f172a, #1e3a5f);
+  color: white;
+  border-color: white;
 }
 
 .user-main-info {
@@ -87,9 +117,10 @@
   letter-spacing: 0.05em;
 }
 .role-badge { background-color: #eff6ff; color: var(--indigo-600); }
+.admin-role-badge { background: linear-gradient(135deg, #0f172a, #1e3a5f); color: #60a5fa; }
 .points-badge { background-color: #f8fafc; color: var(--slate-600); border: 1px solid var(--slate-200); }
 
-/* --- NAVIGATION TABS --- */
+/* === NAVIGATION TABS === */
 .tabs-nav {
   display: flex;
   gap: 2rem;
@@ -111,6 +142,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  text-decoration: none;
 }
 
 .tab-btn:hover { color: var(--slate-900); }
@@ -130,9 +162,17 @@
   border-radius: 3px 3px 0 0;
 }
 
+/* Tab che funge da link (Gestione Film) */
+.tab-link {
+  transition: color 0.2s;
+}
+.tab-link:hover {
+  color: var(--indigo-600);
+}
+
 .tab-icon { font-size: 1.1rem; }
 
-/* --- TAB CONTENT & EMPTY STATES --- */
+/* === TAB CONTENT & EMPTY STATES === */
 .tab-content-area {
   min-height: 200px;
 }
@@ -153,6 +193,8 @@
 /* Bottoni */
 .btn-edit { background: none; border: 1px solid var(--slate-200); padding: 0.5rem 1rem; border-radius: 0.75rem; font-weight: 600; color: var(--slate-800); cursor: pointer; transition: background 0.2s; }
 .btn-edit:hover { background: var(--slate-50); }
+
+/* === FAVORITES GRID (CLIENTE) === */
 .favorites-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -209,4 +251,192 @@
 .btn-remove-fav:hover {
   background: #dc2626; /* Rosso al passaggio del mouse sul pulsantino */
   transform: scale(1.1);
+}
+
+/* ============================================ */
+/* ADMIN: Stats Grid, Filtri, Tabella Ordini    */
+/* ============================================ */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border-left: 5px solid var(--indigo-600);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.stat-card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  color: var(--slate-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--slate-900);
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.text-success { color: var(--emerald-600); }
+.small-text { font-size: 1rem; font-weight: 500; color: var(--slate-600); text-transform: none; }
+.alert-card.active { border-left-color: #dc2626; }
+.alert-card.active .stat-value { color: #dc2626; }
+
+/* Filtri */
+.filters-section {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  width: max-content;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.filter-divider {
+  width: 1px;
+  background-color: var(--slate-200);
+  align-self: stretch;
+  margin: 0.25rem 0.5rem;
+}
+
+.filters-section label {
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.filters-section select {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--slate-200);
+  font-size: 0.95rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filters-section select:focus {
+  border-color: var(--indigo-500);
+}
+
+/* Tabella ordini admin */
+.table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-table th, .admin-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+}
+
+.admin-table th {
+  background-color: #f9fafb;
+  color: var(--slate-600);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.admin-table tbody tr {
+  transition: background-color 0.15s;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.fw-bold { font-weight: 600; }
+
+.articoli-mini {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.articoli-mini li { margin-bottom: 0.25rem; }
+
+/* Status select pill */
+.status-select {
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.status-select:hover {
+  border-color: #9ca3af;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.status-select.in_elaborazione { background-color: #fef3c7; color: #92400e; }
+.status-select.spedito { background-color: #dbeafe; color: #1e40af; }
+.status-select.consegnato { background-color: #d1fae5; color: #065f46; }
+.status-select.annullato { background-color: #fee2e2; color: #991b1b; }
+
+/* Empty state admin */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: var(--slate-50);
+  border-radius: 12px;
+  color: var(--slate-600);
+  font-style: italic;
+}
+
+.loader {
+  text-align: center;
+  padding: 2rem;
+  color: var(--slate-600);
+  font-style: italic;
+}
+
+/* === ANIMATIONS === */
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
