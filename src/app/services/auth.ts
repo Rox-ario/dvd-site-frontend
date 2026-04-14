@@ -64,4 +64,16 @@ export class AuthService {
     }
     return null;
   }
+
+  getEmail(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      // Decodifica il payload del JWT (Base64)
+      const payload = JSON.parse(window.atob(token.split('.')[1]));
+      return payload.sub; // In Spring Security, il subject (sub) è l'email
+    } catch (e) {
+      return null;
+    }
+  }
 }

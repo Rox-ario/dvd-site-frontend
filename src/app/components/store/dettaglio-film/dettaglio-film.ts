@@ -24,6 +24,11 @@ export class DettaglioFilmComponent implements OnInit {
   isPreferito = false;
   isLoggedIn = false;
   isAdmin = false;
+  activeTab: 'recensioni' | 'simili' = 'recensioni';
+  currentUserEmail: string | null = null;
+  recensioneInModificaId: number | null = null;
+  editVoto = 5;
+  editCommento = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -40,6 +45,7 @@ export class DettaglioFilmComponent implements OnInit {
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
     this.isAdmin = this.authService.isAdmin();
+    this.currentUserEmail = this.authService.getEmail();
 
 
     this.route.paramMap.subscribe(params => {
@@ -156,6 +162,61 @@ export class DettaglioFilmComponent implements OnInit {
       error: (err) => {
         this.notificationService.error(err.error?.message || "Impossibile inviare la recensione.");
       }
+    });
+  }
+
+  impostaTab(tab: 'recensioni' | 'simili') {
+    this.activeTab = tab;
+  }
+
+  avviaModifica(r: any) {
+    this.recensioneInModificaId = r.id;
+    this.editVoto = r.stelle;
+    this.editCommento = r.commento;
+  }
+
+  annullaModifica() {
+    this.recensioneInModificaId = null;
+  }
+
+  salvaModifica(idRecensione: number) {
+    if (!this.editCommento.trim()) return;
+
+    const payload = { stelle: this.editVoto, commento: this.editCommento };
+
+    this.filmService.modificaRecensione(idRecensione, payload).subscribe({
+      next: (recensioneAggiornata: any) => {
+        // Aggiorniamo la recensione nell'array locale
+        const index = this.film!.recensioni!.findIndex(x => x.id === idRecensione);
+        if (index !== -1) {
+          this.film!.recensioni![index] = recensioneAggiornata;
+        }
+        this.recensioneInModificaId = null;
+        this.notificationService.success("Recensione modificata con successo!");
+        this.cdr.detectChanges();
+      },
+      error: (err) => this.notificationService.error(err.error?.message || "Impossibile modificare.")
+    });
+  }
+
+  async eliminaRecensione(idRecensione: number) {
+    const conferma = await this.notificationService.confirm({
+      title: 'Moderazione Recensione',
+      message: 'Sei sicuro di voler eliminare questa recensione? L\'azione è irreversibile.',
+      confirmText: 'Elimina',
+      cancelText: 'Annulla',
+      type: 'danger'
+    });
+
+    if (!conferma) return;
+
+    this.filmService.eliminaRecensione(idRecensione).subscribe({
+      next: () => {
+        this.film!.recensioni = this.film!.recensioni!.filter(x => x.id !== idRecensione);
+        this.notificationService.success("Recensione rimossa dal catalogo.");
+        this.cdr.detectChanges();
+      },
+      error: (err) => this.notificationService.error(err.error?.message || "Impossibile eliminare.")
     });
   }
 }

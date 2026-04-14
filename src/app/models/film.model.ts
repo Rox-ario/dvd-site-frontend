@@ -36,3 +36,13 @@ export interface Recensione {
   commento: string;
   data: string;
 }
+
+export interface Recensione {
+  id: number;
+  emailCliente: string;
+  nomeCliente: string;
+  stelle: number;
+  commento: string;
+  data: string;
+}
+

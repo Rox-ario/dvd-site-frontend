@@ -86,51 +86,93 @@
   <a routerLink="/catalogo" class="back-link">Torna al catalogo sicuro</a>
 </div>
 
-<div class="reviews-section">
-  <h3>Recensioni dei Clienti</h3>
+<div class="tabs-container" *ngIf="film && !isLoading">
 
-  <div class="add-review-box" *ngIf="film?.puoRecensire">
-    <h4>Raccontaci la tua esperienza</h4>
-    <div class="star-rating">
-      <span *ngFor="let s of [1,2,3,4,5]"
-            (click)="votoSelezionato = s"
-            [class.active]="votoSelezionato >= s">★</span>
-    </div>
-    <textarea [(ngModel)]="nuovoCommento" placeholder="Scrivi qui la tua recensione..."></textarea>
-    <button class="btn-primary-large" style="width: auto;" (click)="inviaRecensione()">
-      Pubblica Recensione
+  <div class="tabs-header">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'recensioni'"
+      (click)="impostaTab('recensioni')">
+      Recensioni dei Clienti
+    </button>
+    <button
+      *ngIf="filmSimili.length > 0"
+      class="tab-btn"
+      [class.active]="activeTab === 'simili'"
+      (click)="impostaTab('simili')">
+      Potrebbero piacerti anche...
     </button>
   </div>
 
-  <div class="reviews-list">
-    <div class="review-item" *ngFor="let r of film?.recensioni">
-      <div class="review-header">
-        <strong>{{ r.nomeCliente }}</strong>
-        <span class="stars">{{ '★'.repeat(r.stelle) }}{{ '☆'.repeat(5-r.stelle) }}</span>
-      </div>
-      <p>{{ r.commento }}</p>
-      <small>Recensito il {{ r.data | date:'dd MMMM yyyy' }}</small>
-    </div>
+  <div class="tab-content">
 
-    <div *ngIf="film?.recensioni?.length === 0" class="empty-state-dashed" style="padding: 2rem;">
-      <p>Nessuna recensione ancora. Sii il primo a condividere un'opinione!</p>
-    </div>
-  </div>
-</div>
-
-<div class="similar-movies-section" *ngIf="filmSimili.length > 0">
-  <h3 class="section-title">Potrebbero piacerti anche...</h3>
-
-  <div class="similar-grid">
-    <article class="similar-card" *ngFor="let simile of filmSimili">
-      <a [routerLink]="['/dettaglio', simile.idFilm]">
-        <div class="similar-poster">
-          <img [src]="simile.urlImmagine" [alt]="'Locandina ' + simile.titolo">
-          <div class="similar-overlay" *ngIf="!simile.attivo || simile.stock === 0">Esaurito</div>
+    <div class="reviews-section" *ngIf="activeTab === 'recensioni'">
+      <div class="add-review-box" *ngIf="film?.puoRecensire">
+        <h4>Raccontaci la tua esperienza</h4>
+        <div class="star-rating">
+          <span *ngFor="let s of [1,2,3,4,5]"
+                (click)="votoSelezionato = s"
+                [class.active]="votoSelezionato >= s">★</span>
         </div>
-        <h4 class="similar-title">{{ simile.titolo }}</h4>
-        <span class="similar-price">{{ simile.prezzo | currency:'EUR':'symbol':'1.2-2' }}</span>
-      </a>
-    </article>
+        <textarea [(ngModel)]="nuovoCommento" placeholder="Scrivi qui la tua recensione..."></textarea>
+        <button class="btn-primary-large" style="width: auto;" (click)="inviaRecensione()">
+          Pubblica Recensione
+        </button>
+      </div>
+
+      <div class="reviews-list">
+        <div class="review-item" *ngFor="let r of film?.recensioni">
+
+          <div *ngIf="recensioneInModificaId !== r.id">
+            <div class="review-header" style="display: flex; justify-content: space-between;">
+              <div>
+                <strong>{{ r.nomeCliente }}</strong>
+                <span class="stars" style="margin-left: 10px;">{{ '★'.repeat(r.stelle) }}{{ '☆'.repeat(5-r.stelle) }}</span>
+              </div>
+
+              <div class="review-actions" *ngIf="r.emailCliente === currentUserEmail || isAdmin">
+                <button *ngIf="r.emailCliente === currentUserEmail" class="btn-icon-small edit" (click)="avviaModifica(r)" title="Modifica">✏️</button>
+                <button *ngIf="isAdmin" class="btn-icon-small delete" (click)="eliminaRecensione(r.id)" title="Modera (Elimina)">🗑️</button>
+              </div>
+            </div>
+
+            <p>{{ r.commento }}</p>
+            <small>Recensito il {{ r.data | date:'dd MMMM yyyy' }}</small>
+          </div>
+
+          <div *ngIf="recensioneInModificaId === r.id" class="add-review-box inline-edit-box" style="margin-bottom: 0;">
+            <div class="star-rating">
+              <span *ngFor="let s of [1,2,3,4,5]" (click)="editVoto = s" [class.active]="editVoto >= s">★</span>
+            </div>
+            <textarea [(ngModel)]="editCommento" rows="3"></textarea>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn-primary-large" style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;" (click)="salvaModifica(r.id)">Salva</button>
+              <button class="btn-primary-large" style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem; background: #9ca3af;" (click)="annullaModifica()">Annulla</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div *ngIf="film?.recensioni?.length === 0" class="empty-state-dashed" style="padding: 2rem;">
+          <p>Nessuna recensione ancora. Sii il primo a condividere un'opinione!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="similar-movies-section" *ngIf="activeTab === 'simili'">
+      <div class="similar-grid">
+        <article class="similar-card" *ngFor="let simile of filmSimili">
+          <a [routerLink]="['/dettaglio', simile.idFilm]">
+            <div class="similar-poster">
+              <img [src]="simile.urlImmagine" [alt]="'Locandina ' + simile.titolo">
+              <div class="similar-overlay" *ngIf="!simile.attivo || simile.stock === 0">Esaurito</div>
+            </div>
+            <h4 class="similar-title">{{ simile.titolo }}</h4>
+            <span class="similar-price">{{ simile.prezzo | currency:'EUR':'symbol':'1.2-2' }}</span>
+          </a>
+        </article>
+      </div>
+    </div>
+
   </div>
 </div>

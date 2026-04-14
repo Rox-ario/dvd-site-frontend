@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { FilmResponse } from '../models/film.model';
+import {FilmResponse, Recensione} from '../models/film.model';
 import { CreaFilmRequest } from '../models/film.model';
 
 @Injectable({
@@ -50,5 +50,13 @@ export class FilmService {
 
   inviaRecensione(idFilm: number, dati: { stelle: number; commento: string }): Observable<any> {
     return this.http.post(`${this.API_URL}/${idFilm}/recensioni`, dati);
+  }
+
+  modificaRecensione(idRecensione: number, dati: { stelle: number; commento: string }): Observable<Recensione> {
+    return this.http.put<Recensione>(`http://localhost:8080/api/recensioni/${idRecensione}`, dati);
+  }
+
+  eliminaRecensione(idRecensione: number): Observable<void> {
+    return this.http.delete<void>(`http://localhost:8080/api/recensioni/${idRecensione}`);
   }
 }
