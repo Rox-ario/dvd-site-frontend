@@ -1,105 +1,99 @@
 <div class="catalog-container">
 
-  <header class="catalog-header">
-    <div class="header-content">
-      <h1>DVD STORE</h1>
-      <p>Esplora la nostra collezione di capolavori.</p>
-
-      <form [formGroup]="filterForm" class="search-and-filters">
-        <div class="search-bar-row">
-          <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              formControlName="titolo"
-              class="main-search-input"
-              placeholder="Cerca per titolo..."
-              autocomplete="off"
-            >
-          </div>
-          <button type="button" class="btn-toggle-filters" (click)="toggleFiltri()" [class.active]="mostraFiltriAvanzati">
-            <span class="icon">⚲</span> Filtri
-          </button>
-        </div>
-
-        <div class="advanced-filters-panel" *ngIf="mostraFiltriAvanzati">
-          <div class="filters-grid">
-
-            <div class="filter-col">
-              <label>GENERI</label>
-              <input type="text" [formControl]="searchGenere" class="local-search-input" placeholder="Filtra generi...">
-              <div class="pills-container" style="margin-top: 0.5rem;">
-                <button type="button" class="pill"
-                        *ngFor="let g of filteredGeneri$ | async"
-                        [class.active]="filterForm.get('nomeGenere')?.value === g.nome"
-                        (click)="setFiltroPill('nomeGenere', g.nome)">
-                  {{ g.nome }}
-                </button>
-              </div>
-            </div>
-
-            <div class="filter-col">
-              <label>REGISTI</label>
-              <input type="text" [formControl]="searchRegista" class="local-search-input" placeholder="Cerca regista...">
-              <div class="pills-container" style="margin-top: 0.5rem;">
-                <button type="button" class="pill"
-                        *ngFor="let r of filteredRegisti$ | async"
-                        [class.active]="filterForm.get('nomeRegista')?.value === (r.nome + ' ' + r.cognome)"
-                        (click)="setFiltroPill('nomeRegista', r.nome + ' ' + r.cognome)">
-                  {{ r.nome }} {{ r.cognome }}
-                </button>
-              </div>
-
-              <label style="margin-top: 1.5rem;">ATTORI</label>
-              <input type="text" [formControl]="searchAttore" class="local-search-input" placeholder="Cerca attore...">
-              <div class="pills-container" style="margin-top: 0.5rem;">
-                <button type="button" class="pill"
-                        *ngFor="let a of filteredAttori$ | async"
-                        [class.active]="filterForm.get('nomeAttore')?.value === (a.nome + ' ' + a.cognome)"
-                        (click)="setFiltroPill('nomeAttore', a.nome + ' ' + a.cognome)">
-                  {{ a.nome }} {{ a.cognome }}
-                </button>
-              </div>
-            </div>
-
-            <div class="filter-col">
-              <div class="price-header">
-                <label>PREZZO MASSIMO</label>
-                <span class="price-display">€{{ filterForm.get('prezzoMax')?.value || 50 }}</span>
-              </div>
-              <div class="range-container">
-                <input type="range" formControlName="prezzoMax" min="5" max="50" step="1">
-                <div class="range-labels">
-                  <span>€5</span>
-                  <span>€50</span>
-                </div>
-              </div>
-
-              <div class="filters-actions">
-                <button type="button" class="btn-reset" (click)="resetFiltri()">Azzera tutti i filtri</button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </form>
+  <header class="catalog-hero">
+    <div class="hero-content">
+      <h1>Il Tuo Store. <span class="highlight">La Tua Passione.</span></h1>
+      <p>Esplora la nostra collezione di capolavori cinematografici.</p>
     </div>
   </header>
 
+  <div class="floating-controls">
+    <form [formGroup]="filterForm" class="search-and-filters">
+      <div class="search-bar-row">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" formControlName="titolo" class="main-search-input" placeholder="Che titolo cerchi?" autocomplete="off">
+        </div>
+        <button type="button" class="btn-toggle-filters" (click)="toggleFiltri()" [class.active]="mostraFiltriAvanzati">
+          <span class="icon">⚲</span> Filtri
+        </button>
+      </div>
+
+      <div class="advanced-filters-panel" *ngIf="mostraFiltriAvanzati">
+        <div class="filters-grid">
+          <div class="filter-col">
+            <label>Generi</label>
+            <input type="text" [formControl]="searchGenere" class="local-search-input" placeholder="Cerca genere...">
+            <div class="pills-container">
+              <button type="button" class="pill" *ngFor="let g of filteredGeneri$ | async"
+                      [class.active]="filterForm.get('nomeGenere')?.value === g.nome"
+                      (click)="setFiltroPill('nomeGenere', g.nome)">
+                {{ g.nome }}
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-col">
+            <label>Registi</label>
+            <input type="text" [formControl]="searchRegista" class="local-search-input" placeholder="Cerca regista...">
+            <div class="pills-container">
+              <button type="button" class="pill" *ngFor="let r of filteredRegisti$ | async"
+                      [class.active]="filterForm.get('nomeRegista')?.value === (r.nome + ' ' + r.cognome)"
+                      (click)="setFiltroPill('nomeRegista', r.nome + ' ' + r.cognome)">
+                {{ r.nome }} {{ r.cognome }}
+              </button>
+            </div>
+
+            <label style="margin-top: 1.5rem;">Attori</label>
+            <input type="text" [formControl]="searchAttore" class="local-search-input" placeholder="Cerca attore...">
+            <div class="pills-container">
+              <button type="button" class="pill" *ngFor="let a of filteredAttori$ | async"
+                      [class.active]="filterForm.get('nomeAttore')?.value === (a.nome + ' ' + a.cognome)"
+                      (click)="setFiltroPill('nomeAttore', a.nome + ' ' + a.cognome)">
+                {{ a.nome }} {{ a.cognome }}
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-col">
+            <div class="price-header">
+              <label>Prezzo Massimo</label>
+              <span class="price-display">€{{ filterForm.get('prezzoMax')?.value || 50 }}</span>
+            </div>
+            <div class="range-container">
+              <input type="range" formControlName="prezzoMax" min="5" max="50" step="1">
+              <div class="range-labels"><span>€5</span><span>€50</span></div>
+            </div>
+            <div class="filters-actions">
+              <button type="button" class="btn-reset" (click)="resetFiltri()">Azzera filtri</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
   <div class="alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <ng-template #loadingTemplate>
+    <div class="loader-container">
+      <div class="spinner"></div>
+      <p>Allestimento degli scaffali in corso...</p>
+    </div>
+  </ng-template>
 
   <main class="grid-container" *ngIf="film$ | async as filmList; else loadingTemplate">
     <div class="empty-state" *ngIf="filmList.length === 0 && !errorMessage">
-      <p>Nessun film trovato con i criteri di ricerca attuali.</p>
+      <p>Nessun film trovato. Prova ad allargare i tuoi orizzonti cinematografici.</p>
     </div>
 
     <div class="movie-grid">
       <article class="movie-card" *ngFor="let film of filmList">
-
         <div class="card-img-container">
           <a [routerLink]="['/dettaglio', film.idFilm]">
             <img [src]="film.urlImmagine" [alt]="'Locandina di ' + film.titolo" loading="lazy">
           </a>
+          <div class="badge-overlay" *ngIf="!film.attivo || film.stock === 0">Esaurito</div>
         </div>
 
         <div class="card-content">
@@ -107,40 +101,18 @@
             <span class="anno">{{ film.anno }}</span>
             <span class="generi" *ngIf="film.genere && film.genere.length">{{ film.genere[0] }}</span>
           </div>
-
           <h3 class="movie-title">
-            <a [routerLink]="['/dettaglio', film.idFilm]" style="text-decoration: none; color: inherit;">
-              {{ film.titolo }}
-            </a>
+            <a [routerLink]="['/dettaglio', film.idFilm]">{{ film.titolo }}</a>
           </h3>
-
           <p class="movie-price">{{ film.prezzo | currency:'EUR':'symbol':'1.2-2' }}</p>
 
-          <div class="badge-overlay" *ngIf="!film.attivo || film.stock === 0">
-            Esaurito
-          </div>
-
-          <button
-            *ngIf="!isAdmin"
-            class="btn-primary"
-            [disabled]="!film.attivo || film.stock === 0"
-            (click)="aggiungiAlCarrello(film, $event)"
-            [class.btn-success]="aggiuntiDiRecente.has(film.idFilm)">
-
+          <button *ngIf="!isAdmin" class="btn-primary" [disabled]="!film.attivo || film.stock === 0"
+                  (click)="aggiungiAlCarrello(film, $event)" [class.btn-success]="aggiuntiDiRecente.has(film.idFilm)">
             <span *ngIf="!aggiuntiDiRecente.has(film.idFilm)">Aggiungi al Carrello</span>
             <span *ngIf="aggiuntiDiRecente.has(film.idFilm)">✓ Aggiunto!</span>
           </button>
         </div>
       </article>
     </div>
-
   </main>
-
-  <ng-template #loadingTemplate>
-    <div class="loader-container">
-      <div class="spinner"></div>
-      <p>Caricamento catalogo in corso...</p>
-    </div>
-  </ng-template>
-
 </div>
