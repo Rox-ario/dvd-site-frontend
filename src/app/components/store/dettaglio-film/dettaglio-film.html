@@ -44,8 +44,26 @@
       <div class="meta-row">
         <span class="meta-item">{{ film.anno }}</span>
         <span class="meta-item">{{ film.durataMinuti }} min</span>
-        <div class="badges">
-          <span class="badge" *ngFor="let gen of film.genere">{{ gen }}</span>
+        <div class="film-badges-area">
+
+          <ng-container *ngIf="!filmEspansi.has(film.idFilm)">
+          <span *ngFor="let g of film.genere | slice:0:3" class="badge-genre">
+            {{ g }}
+          </span>
+            <button type="button" class="badge-genre badge-action" *ngIf="film.genere && film.genere.length > 3" (click)="toggleGeneri(film.idFilm, $event)" title="Mostra tutti i generi">
+              +{{ film.genere.length - 3 }} ▾
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="filmEspansi.has(film.idFilm)">
+          <span *ngFor="let g of film.genere" class="badge-genre">
+            {{ g }}
+          </span>
+            <button type="button" class="badge-genre badge-action collapse-action" (click)="toggleGeneri(film.idFilm, $event)" title="Riduci">
+              Meno ▴
+            </button>
+          </ng-container>
+
         </div>
       </div>
 
@@ -132,7 +150,8 @@
 
               <div class="review-actions" *ngIf="r.emailCliente === currentUserEmail || isAdmin">
                 <button *ngIf="r.emailCliente === currentUserEmail" class="btn-icon-small edit" (click)="avviaModifica(r)" title="Modifica">✏️</button>
-                <button *ngIf="isAdmin" class="btn-icon-small delete" (click)="eliminaRecensione(r.id)" title="Modera (Elimina)">🗑️</button>
+
+                <button class="btn-icon-small delete" (click)="eliminaRecensione(r.id)" [title]="isAdmin ? 'Modera (Elimina)' : 'Elimina la tua recensione'">🗑️</button>
               </div>
             </div>
 

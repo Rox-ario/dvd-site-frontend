@@ -29,6 +29,7 @@ export class DettaglioFilmComponent implements OnInit {
   recensioneInModificaId: number | null = null;
   editVoto = 5;
   editCommento = '';
+  filmEspansi: Set<number> = new Set<number>();
 
   constructor(
     private route: ActivatedRoute,
@@ -200,8 +201,9 @@ export class DettaglioFilmComponent implements OnInit {
   }
 
   async eliminaRecensione(idRecensione: number) {
+    // Titolo dinamico a seconda di chi sta compiendo l'azione
     const conferma = await this.notificationService.confirm({
-      title: 'Moderazione Recensione',
+      title: this.isAdmin ? 'Moderazione Recensione' : 'Elimina Recensione',
       message: 'Sei sicuro di voler eliminare questa recensione? L\'azione è irreversibile.',
       confirmText: 'Elimina',
       cancelText: 'Annulla',
@@ -212,11 +214,27 @@ export class DettaglioFilmComponent implements OnInit {
 
     this.filmService.eliminaRecensione(idRecensione).subscribe({
       next: () => {
+        // Rimuoviamo la recensione dalla vista locale
         this.film!.recensioni = this.film!.recensioni!.filter(x => x.id !== idRecensione);
-        this.notificationService.success("Recensione rimossa dal catalogo.");
+
+        // Innovazione UX: se non sono un admin (o se l'ho cancellata ed ero io l'autore), riabilito il form
+        if (this.film!.recensioni.every(x => x.emailCliente !== this.currentUserEmail)) {
+          this.film!.puoRecensire = true;
+        }
+
+        this.notificationService.success("Recensione rimossa con successo.");
         this.cdr.detectChanges();
       },
       error: (err) => this.notificationService.error(err.error?.message || "Impossibile eliminare.")
     });
+  }
+
+  toggleGeneri(idFilm: number, event: Event) {
+    event.stopPropagation(); // Evita che il click si propaghi ad altri elementi
+    if (this.filmEspansi.has(idFilm)) {
+      this.filmEspansi.delete(idFilm);
+    } else {
+      this.filmEspansi.add(idFilm);
+    }
   }
 }

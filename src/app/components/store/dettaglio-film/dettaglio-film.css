@@ -288,3 +288,198 @@
   border: 1px dashed #2563eb;
   padding: 1rem;
 }
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+  cursor: help; /* Il cursore a punto interrogativo fa capire che c'è un'interazione possibile */
+}
+
+/* Colore differente per il badge "+X" per distinguerlo dai generi standard */
+.badge-extra {
+  background-color: #e5e7eb;
+  color: #4b5563;
+  transition: background-color 0.2s;
+}
+
+.tooltip-container:hover .badge-extra {
+  background-color: #d1d5db;
+}
+
+/* Stile del box nero che appare al passaggio del mouse */
+.tooltip-content {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: 130%; /* Lo posiziona sopra il badge */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1f2937; /* Grigio molto scuro, elegante */
+  color: #f9fafb;
+  text-align: center;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  white-space: nowrap; /* Evita che il testo vada a capo nel tooltip */
+  z-index: 100;
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem; /* Spazio tra i generi nel tooltip */
+
+  /* Transizione fluida per l'apparizione */
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+/* Il triangolino/freccina che punta verso il basso */
+.tooltip-content::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px; /* Centra il triangolo di 12px di larghezza */
+  border-width: 6px;
+  border-style: solid;
+  border-color: #1f2937 transparent transparent transparent;
+}
+
+/* Trigger dell'animazione: quando il mouse entra nel container, mostra il tooltip */
+.tooltip-container:hover .tooltip-content {
+  visibility: visible;
+  opacity: 1;
+}
+.film-badges-area {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0; /* Maggiore respiro verticale */
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Stile premium per i singoli generi */
+.badge-genre {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1.2rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px; /* Effetto pillola moderno */
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* Accento visivo (puntino stile "led") per dare un tocco tech/moderno */
+.badge-genre::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #2563eb; /* Riprende il blu primario della tua app */
+  border-radius: 50%;
+  margin-right: 8px;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+/* Effetto hover tattile */
+.badge-genre:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.badge-genre:hover::before {
+  transform: scale(1.5);
+  background-color: #1d4ed8;
+}
+
+/* Stile differenziato per i bottoni Espandi/Riduci */
+button.badge-genre.badge-action {
+  background: transparent;
+  border: 1px dashed #94a3b8;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.4rem 1rem;
+}
+
+/* Rimuoviamo il puntino blu dai pulsanti di azione */
+button.badge-genre.badge-action::before {
+  display: none;
+}
+
+button.badge-genre.badge-action:hover {
+  background: #f8fafc;
+  border-color: #2563eb;
+  color: #2563eb;
+  transform: scale(1.05); /* Effetto pop invece di traslazione per le azioni */
+  box-shadow: none;
+}
+
+button.badge-genre.collapse-action {
+  background-color: #eff6ff;
+  border-style: solid;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Gap ridotto da 1.5rem per allinearsi allo stile compatto delle pillole */
+  flex-wrap: wrap; /* Evita rotture del layout su schermi piccoli */
+}
+
+/* --- Restyling Anno e Minuti (.meta-item) --- */
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1.2rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.meta-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+/* 1. Anno (Primo span) - Led color Ambra */
+.meta-item:nth-child(1)::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #f59e0b;
+  border-radius: 50%;
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+/* 2. Durata (Secondo span) - Led color Smeraldo */
+.meta-item:nth-child(2)::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #10b981;
+  border-radius: 50%;
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.meta-item:hover::before {
+  transform: scale(1.5);
+}
