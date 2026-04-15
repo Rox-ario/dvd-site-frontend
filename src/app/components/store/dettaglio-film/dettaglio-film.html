@@ -72,6 +72,19 @@
         <p>{{ film.trama }}</p>
       </div>
 
+      <div class="fun-facts-premium" *ngIf="film?.curiosita?.length">
+        <div class="fun-facts-header">
+          <span class="sparkle-icon">✨</span>
+          <h3>Dietro le Quinte</h3>
+        </div>
+        <div class="fun-facts-scroller">
+          <div class="fact-card" *ngFor="let fact of film?.curiosita">
+            <span class="quote-bg">❝</span>
+            <p>{{ fact }}</p>
+          </div>
+        </div>
+      </div>
+
       <div class="cast-crew-grid">
         <div class="crew-box">
           <h3>Regia</h3>
@@ -192,6 +205,5 @@
         </article>
       </div>
     </div>
-
   </div>
 </div>

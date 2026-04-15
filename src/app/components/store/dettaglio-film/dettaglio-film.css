@@ -1,6 +1,5 @@
 .dettaglio-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; min-height: 80vh; }
 
-/* scritta catalogo */
 .back-link
 {
   display: inline-block;
@@ -482,4 +481,122 @@ button.badge-genre.collapse-action {
 
 .meta-item:hover::before {
   transform: scale(1.5);
+}
+.fun-facts-premium {
+  margin: 1rem 0 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.05), 0 8px 10px -6px rgba(37, 99, 235, 0.01);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorazione di background per dare profondità */
+.fun-facts-premium::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.fun-facts-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.fun-facts-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(90deg, #1e40af, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sparkle-icon {
+  font-size: 1.2rem;
+  animation: pulse-sparkle 2s infinite ease-in-out;
+}
+
+@keyframes pulse-sparkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50% { transform: scale(1.2) rotate(15deg); opacity: 0.7; }
+}
+
+/* Scroller orizzontale moderno (Nascita scrollbar nativa) */
+.fun-facts-scroller {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 1rem; /* Spazio per l'ombra */
+  scroll-snap-type: x mandatory;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.fun-facts-scroller::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Card individuali */
+.fact-card {
+  flex: 0 0 80%;
+  max-width: 350px;
+  scroll-snap-align: center;
+  background: #ffffff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #3b82f6;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  display: flex;
+  align-items: center;
+
+  overflow: hidden; /* <-- AGGIUNGI QUESTO */
+}
+
+.fact-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 20px -5px rgba(37, 99, 235, 0.15);
+  border-left-color: #1d4ed8;
+}
+
+.quote-bg {
+  position: absolute;
+  top: 15px; /* Spostato in positivo per restare dentro la card */
+  right: 20px; /* Più respiro dal bordo destro */
+  font-size: 3rem; /* Ridimensionato per non sovrastare il testo */
+  color: #e0e7ff; /* Reso un pelo più visibile per compensare la dimensione minore */
+  font-family: Georgia, serif;
+  line-height: 1;
+  z-index: 0;
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+
+.fact-card:hover .quote-bg {
+  color: #dbeafe; /* Diventa leggermente più visibile all'hover */
+}
+
+.fact-card p {
+  margin: 0;
+  font-size: 1rem;
+  color: #475569;
+  line-height: 1.6;
+  font-weight: 500;
+  position: relative;
+  z-index: 1; /* Rimane sopra la virgoletta di sfondo */
 }

@@ -207,6 +207,34 @@
         </div>
       </div>
 
+      <div class="form-group span-2">
+        <label>Curiosità</label>
+        <div style="display: flex; gap: 3rem; margin-bottom: 0.5rem; align-items: flex-start;">
+          <div style="flex-grow: 1;">
+            <input type="text" [(ngModel)]="nuovaCuriositaTesto" [ngModelOptions]="{standalone: true}"
+                   class="form-input" placeholder="Inserisci qui la curiosità"
+                   [maxlength]="lunghezzaMassima" (keyup.enter)="aggiungiCuriosita(); $event.preventDefault()">
+            <div style="text-align: right; margin-top: 0.3rem;">
+              <small [ngStyle]="{'color': nuovaCuriositaTesto.length === lunghezzaMassima ? '#ef4444' : '#9ca3af', 'font-size': '0.8rem'}">
+                {{ nuovaCuriositaTesto.length }} / {{ lunghezzaMassima }}
+              </small>
+            </div>
+          </div>
+          <button type="button" class="btn-modern btn-primary" (click)="aggiungiCuriosita()" [disabled]="!nuovaCuriositaTesto.trim()">
+            Aggiungi
+          </button>
+        </div>
+
+        <div class="custom-multi-select-list" *ngIf="curiositaTemp.length > 0" style="height: auto; max-height: 180px;">
+          <div class="list-item" *ngFor="let fact of curiositaTemp; let i = index">
+            <div class="item-content">
+              <span style="font-size: 0.95rem; color: #374151;">💡 {{ fact }}</span>
+            </div>
+            <button type="button" class="btn-delete-item" (click)="rimuoviCuriosita(i)" title="Rimuovi curiosità">&times;</button>
+          </div>
+        </div>
+      </div>
+
       <div class="form-actions span-2">
         <button type="submit" class="btn-modern btn-primary" [disabled]="filmForm.invalid">
           Salva DVD
@@ -215,5 +243,4 @@
 
     </form>
   </div>
-
 </div>

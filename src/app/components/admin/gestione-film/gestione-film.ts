@@ -23,6 +23,9 @@ export class GestioneFilmComponent implements OnInit {
   registi: Regista[] = [];
   testoRicerca = '';
   genereSelezionato = '';
+  curiositaTemp: string[] = [];
+  lunghezzaMassima = 250;
+  nuovaCuriositaTesto: string = ''
 
   ricercaGenereTerm = '';
   ricercaRegistaTerm = '';
@@ -42,6 +45,7 @@ export class GestioneFilmComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {
     this.filmForm = this.fb.group({
+      curiosita: [[]],
       titolo: ['', Validators.required],
       anno: ['', [Validators.required, Validators.min(1888)]],
       durataMinuti: ['', [Validators.required, Validators.min(1)]],
@@ -210,6 +214,7 @@ export class GestioneFilmComponent implements OnInit {
     const idAttoriEstratti = film.attori
       ? this.attori.filter(a => film.attori.includes(`${a.nome} ${a.cognome}`)).map(a => a.id)
       : [];
+    this.curiositaTemp = film.curiosita ? [...film.curiosita] : [];
 
     // 4. Popoliamo il form con i dati completi
     this.filmForm.patchValue({
@@ -222,7 +227,8 @@ export class GestioneFilmComponent implements OnInit {
       urlImmagine: film.urlImmagine,
       idGeneri: idGeneriEstratti,
       idAttori: idAttoriEstratti,
-      idRegisti: idRegistiEstratti
+      idRegisti: idRegistiEstratti,
+      curiosita: this.curiositaTemp
     });
 
     this.mostraForm = true;
@@ -412,11 +418,28 @@ export class GestioneFilmComponent implements OnInit {
     this.filmInModificaId = null;
     this.filmForm.reset({ anno: new Date().getFullYear(), prezzo: 0 }); // Valori default puliti
     this.mostraForm = true;
+    this.curiositaTemp = [];
     this.cdr.detectChanges(); // Consigliato per transizione fluida
   }
 
   annullaForm() {
     this.mostraForm = false;
     this.cdr.detectChanges();
+  }
+
+  aggiungiCuriosita() {
+    const testo = this.nuovaCuriositaTesto.trim();
+    if (testo && testo.length <= this.lunghezzaMassima) {
+      this.curiositaTemp.push(testo);
+      this.filmForm.patchValue({ curiosita: this.curiositaTemp });
+      this.nuovaCuriositaTesto = '';
+    } else if (testo.length > this.lunghezzaMassima) {
+      this.notificationService.error(`La curiosità supera i ${this.lunghezzaMassima} caratteri consentiti.`);
+    }
+  }
+
+  rimuoviCuriosita(index: number) {
+    this.curiositaTemp.splice(index, 1);
+    this.filmForm.patchValue({ curiosita: this.curiositaTemp });
   }
 }
