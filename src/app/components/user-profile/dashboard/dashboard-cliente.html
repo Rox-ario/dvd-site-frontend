@@ -37,24 +37,24 @@
       </div>
     </div>
 
-    <div class="edit-section" *ngIf="isEditing">
-      <form [formGroup]="editForm" (ngSubmit)="salvaModifiche()" style="background: var(--slate-50); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--slate-200); margin-bottom: 2rem;">
-        <h3 style="margin-top: 0; color: var(--slate-800);">Aggiorna i tuoi dati</h3>
+    <div class="edit-section modern-fade-in" *ngIf="isEditing">
+      <form [formGroup]="editForm" (ngSubmit)="salvaModifiche()" class="edit-profile-form">
+        <h3>Aggiorna i tuoi dati</h3>
 
-        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-          <div style="flex: 1;">
-            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.5rem;">Nome</label>
-            <input type="text" formControlName="nome" style="width: 100%; padding: 0.75rem; border: 1px solid var(--slate-200); border-radius: 0.5rem;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome</label>
+            <input type="text" formControlName="nome" class="modern-input">
           </div>
-          <div style="flex: 1;">
-            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.5rem;">Cognome</label>
-            <input type="text" formControlName="cognome" style="width: 100%; padding: 0.75rem; border: 1px solid var(--slate-200); border-radius: 0.5rem;">
+          <div class="form-group">
+            <label>Cognome</label>
+            <input type="text" formControlName="cognome" class="modern-input">
           </div>
         </div>
 
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-          <button type="button" class="btn-edit" (click)="toggleEditMode()">Annulla</button>
-          <button type="submit" style="background: var(--indigo-600); color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; border: none; cursor: pointer; font-weight: 600;" [disabled]="editForm.invalid || isLoading">Salva Modifiche</button>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="toggleEditMode()">Annulla</button>
+          <button type="submit" class="btn-primary" [disabled]="editForm.invalid || isLoading">Salva Modifiche</button>
         </div>
       </form>
     </div>

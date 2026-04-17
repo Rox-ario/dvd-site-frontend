@@ -1,54 +1,75 @@
 <div class="storico-container">
 
   <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
-  <div class="loader" *ngIf="isLoading">Caricamento storico in corso...</div>
-
-  <div class="empty-state" *ngIf="!isLoading && ordini.length === 0 && !errorMessage">
-    <p>Non hai ancora effettuato nessun ordine. 🍿</p>
-    <a routerLink="/catalogo" class="btn-primary">Vai al Catalogo</a>
+  <div class="loader-container" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Caricamento storico in corso...</p>
   </div>
 
-  <div class="ordini-list" *ngIf="ordini.length > 0">
-    <article class="ordine-card" *ngFor="let ordine of ordini">
-      <div class="ordine-header">
-        <div class="ordine-info">
-          <h3>Ordine #{{ ordine.numeroOrdine }}</h3>
-          <span class="data">{{ ordine.dataAcquisto | date:'dd/MM/yyyy HH:mm' }}</span>
-        </div>
-        <div class="ordine-status" style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-          <div style="display: flex; align-items: center; gap: 1.5rem;">
-    <span class="badge" [ngClass]="ordine.stato.toLowerCase()">
-      {{ ordine.stato.replace('_', ' ') }}
-    </span>
-            <span class="totale">{{ ordine.totale | currency:'EUR':'symbol':'1.2-2' }}</span>
-          </div>
+  <div class="empty-state-dashed" *ngIf="!isLoading && ordini.length === 0 && !errorMessage">
+    <div class="empty-icon">🍿</div>
+    <p>Non hai ancora effettuato nessun ordine.</p>
+    <a routerLink="/catalogo" class="btn-primary-large" style="margin-top: 1rem; display: inline-block;">Vai al Catalogo</a>
+  </div>
 
-          <button
-            *ngIf="ordine.stato === 'IN_ELABORAZIONE'"
-            class="btn-cancel-order"
-            [disabled]="annullamentoInCorso.has(ordine.numeroOrdine)"
-            (click)="annullaOrdine(ordine.numeroOrdine)"
-            title="Annulla l'ordine e richiedi un rimborso completo">
-            <span class="btn-cancel-icon" *ngIf="!annullamentoInCorso.has(ordine.numeroOrdine)">✕</span>
-            <span class="btn-cancel-spinner" *ngIf="annullamentoInCorso.has(ordine.numeroOrdine)"></span>
-            {{ annullamentoInCorso.has(ordine.numeroOrdine) ? 'Annullamento...' : 'Annulla ordine' }}
-          </button>
-          <span class="cancel-hint" *ngIf="ordine.stato === 'IN_ELABORAZIONE' && !annullamentoInCorso.has(ordine.numeroOrdine)">
-            Puoi annullare finché è in elaborazione
+  <div class="ordini-timeline" *ngIf="ordini.length > 0">
+    <article class="ordine-ticket" *ngFor="let ordine of ordini">
+      
+      <!-- Sezione Top: ID + Status -->
+      <div class="ticket-header">
+        <div class="ticket-id">
+          <span class="hash">#</span>{{ ordine.numeroOrdine }}
+        </div>
+        <div class="ticket-status-badging">
+          <span class="badge premium-badge" [ngClass]="ordine.stato.toLowerCase()">
+            {{ ordine.stato.replace('_', ' ') }}
           </span>
         </div>
       </div>
 
-      <div class="ordine-body">
-        <h4>Articoli Acquistati:</h4>
-        <ul class="articoli-list">
+      <!-- Corpo del biglietto -->
+      <div class="ticket-body">
+        <div class="ticket-meta-info">
+          <div class="meta-item">
+            <span class="meta-label">Data Acquisto</span>
+            <span class="meta-value">{{ ordine.dataAcquisto | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="meta-item align-right">
+            <span class="meta-label">Totale</span>
+            <span class="meta-value total-highlight">{{ ordine.totale | currency:'EUR':'symbol':'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="divider-dashed"></div>
+
+        <h4 class="ticket-section-title">Riepilogo Articoli</h4>
+        <ul class="articoli-list-premium">
           <li *ngFor="let riga of ordine.righe">
-            <span class="qty">{{ riga.quantita }}x</span>
-            <span class="titolo">{{ riga.titoloFilm }}</span>
-            <span class="prezzo">{{ riga.prezzoAcquisto | currency:'EUR':'symbol':'1.2-2' }}</span>
+            <div class="item-primary-info">
+              <span class="qty-badge">{{ riga.quantita }}x</span>
+              <span class="titolo-film-premium">{{ riga.titoloFilm }}</span>
+            </div>
+            <span class="item-prezzo">{{ riga.prezzoAcquisto | currency:'EUR':'symbol':'1.2-2' }}</span>
           </li>
         </ul>
       </div>
+
+      <!-- Sezione Azioni (Fondo) -->
+      <div class="ticket-footer" *ngIf="ordine.stato === 'IN_ELABORAZIONE'">
+        <button
+          class="btn-cancel-elegant"
+          [disabled]="annullamentoInCorso.has(ordine.numeroOrdine)"
+          (click)="annullaOrdine(ordine.numeroOrdine)"
+          title="Annulla l'ordine e richiedi un rimborso completo">
+          <span class="cancel-icon" *ngIf="!annullamentoInCorso.has(ordine.numeroOrdine)">✕</span>
+          <span class="spinner-small" *ngIf="annullamentoInCorso.has(ordine.numeroOrdine)"></span>
+          {{ annullamentoInCorso.has(ordine.numeroOrdine) ? 'Annullamento in corso...' : 'Annulla questo ordine' }}
+        </button>
+        <div class="cancel-hint-container">
+          <span class="cancel-hint">Possibile solo se in elaborazione</span>
+        </div>
+      </div>
+
     </article>
   </div>
 </div>
