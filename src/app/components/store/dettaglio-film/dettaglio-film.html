@@ -9,12 +9,8 @@
       <div class="action-box">
         <div class="price-tag">{{ film.prezzo | currency:'EUR':'symbol':'1.2-2' }}</div>
 
-        <button
-          *ngIf="!isAdmin"
-          class="btn-primary-large"
-          [disabled]="!film.attivo || film.stock === 0"
-          (click)="aggiungiAlCarrello()"
-          [class.success]="aggiuntoDiRecente">
+        <button *ngIf="!isAdmin" class="btn-primary-large" [disabled]="!film.attivo || film.stock === 0"
+          (click)="aggiungiAlCarrello()" [class.success]="aggiuntoDiRecente">
 
           <span *ngIf="!aggiuntoDiRecente && film.stock > 0">Aggiungi al Carrello</span>
           <span *ngIf="aggiuntoDiRecente">✓ Aggiunto con successo!</span>
@@ -32,9 +28,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <h1 class="title">{{ film.titolo }}</h1>
 
-        <button
-          *ngIf="isLoggedIn"
-          (click)="togglePreferito()"
+        <button *ngIf="isLoggedIn" (click)="togglePreferito()"
           style="background: none; border: none; font-size: 2.2rem; cursor: pointer; transition: transform 0.2s;"
           [title]="isPreferito ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'">
           {{ isPreferito ? '❤️' : '🤍' }}
@@ -47,19 +41,21 @@
         <div class="film-badges-area">
 
           <ng-container *ngIf="!filmEspansi.has(film.idFilm)">
-          <span *ngFor="let g of film.genere | slice:0:3" class="badge-genre">
-            {{ g }}
-          </span>
-            <button type="button" class="badge-genre badge-action" *ngIf="film.genere && film.genere.length > 3" (click)="toggleGeneri(film.idFilm, $event)" title="Mostra tutti i generi">
+            <span *ngFor="let g of film.genere | slice:0:3" class="badge-genre">
+              {{ g }}
+            </span>
+            <button type="button" class="badge-genre badge-action" *ngIf="film.genere && film.genere.length > 3"
+              (click)="toggleGeneri(film.idFilm, $event)" title="Mostra tutti i generi">
               +{{ film.genere.length - 3 }} ▾
             </button>
           </ng-container>
 
           <ng-container *ngIf="filmEspansi.has(film.idFilm)">
-          <span *ngFor="let g of film.genere" class="badge-genre">
-            {{ g }}
-          </span>
-            <button type="button" class="badge-genre badge-action collapse-action" (click)="toggleGeneri(film.idFilm, $event)" title="Riduci">
+            <span *ngFor="let g of film.genere" class="badge-genre">
+              {{ g }}
+            </span>
+            <button type="button" class="badge-genre badge-action collapse-action"
+              (click)="toggleGeneri(film.idFilm, $event)" title="Riduci">
               Meno ▴
             </button>
           </ng-container>
@@ -120,16 +116,10 @@
 <div class="tabs-container" *ngIf="film && !isLoading">
 
   <div class="tabs-header">
-    <button
-      class="tab-btn"
-      [class.active]="activeTab === 'recensioni'"
-      (click)="impostaTab('recensioni')">
+    <button class="tab-btn" [class.active]="activeTab === 'recensioni'" (click)="impostaTab('recensioni')">
       Recensioni dei Clienti
     </button>
-    <button
-      *ngIf="filmSimili.length > 0"
-      class="tab-btn"
-      [class.active]="activeTab === 'simili'"
+    <button *ngIf="filmSimili.length > 0" class="tab-btn" [class.active]="activeTab === 'simili'"
       (click)="impostaTab('simili')">
       Potrebbero piacerti anche...
     </button>
@@ -138,57 +128,106 @@
   <div class="tab-content">
 
     <div class="reviews-section" *ngIf="activeTab === 'recensioni'">
-      <div class="add-review-box" *ngIf="film?.puoRecensire">
-        <h4>Raccontaci la tua esperienza</h4>
-        <div class="star-rating">
-          <span *ngFor="let s of [1,2,3,4,5]"
-                (click)="votoSelezionato = s"
-                [class.active]="votoSelezionato >= s">★</span>
+      
+      <!-- Blocco Statistiche Moderno -->
+      <div class="dashboard-stats-card premium-stats-box">
+        <div class="stats-header">
+          <div class="average-score">
+            <span class="score-number">{{ averageRating }}<span class="score-max">/5</span></span>
+          </div>
+          <div class="score-details">
+            <h4 class="score-subtitle" *ngIf="totalReviews > 0">{{ ratingSubtitle }}</h4>
+            <h4 class="score-subtitle" *ngIf="totalReviews === 0" style="color: #6b7280;">Nessuna Recensione</h4>
+            <div class="stars-and-count">
+              <span *ngFor="let s of [1,2,3,4,5]" [ngStyle]="{'color': s <= avgRatingNumber ? '#f59e0b' : '#e5e7eb'}">★</span>
+              <a href="javascript:void(0)" class="review-count">({{ totalReviews }})</a>
+            </div>
+          </div>
         </div>
-        <textarea [(ngModel)]="nuovoCommento" placeholder="Scrivi qui la tua recensione..."></textarea>
-        <button class="btn-primary-large" style="width: auto;" (click)="inviaRecensione()">
-          Pubblica Recensione
-        </button>
+
+        <div class="rating-distributions">
+          <div class="dist-row" *ngFor="let m of getRatingDistribution()">
+            <span class="star-label">{{ m.stelle }}</span>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" [style.width.%]="m.percentage"></div>
+            </div>
+            <span class="count-label">({{ m.count }})</span>
+          </div>
+        </div>
+
+        <div class="button-wrapper">
+          <button class="btn-primary-large btn-write-review" *ngIf="film?.puoRecensire && !mostraFormRecensione" (click)="toggleFormRecensione()">
+            Scrivi una recensione
+          </button>
+        </div>
       </div>
 
-      <div class="reviews-list">
-        <div class="review-item" *ngFor="let r of film?.recensioni">
+      <div class="reviews-list-container">
+        <!-- Form recensione -->
+        <div class="add-review-box modern" *ngIf="film?.puoRecensire && mostraFormRecensione">
+          <h4>Raccontaci la tua esperienza</h4>
+          <div class="star-rating">
+            <span *ngFor="let s of [1,2,3,4,5]"
+                  (click)="votoSelezionato = s"
+                  [class.active]="votoSelezionato >= s">★</span>
+          </div>
+          <textarea [(ngModel)]="nuovoCommento" placeholder="Scrivi qui la tua recensione..." rows="4"></textarea>
+          <div class="form-actions">
+            <button class="btn-primary-large" style="width: auto;" (click)="inviaRecensione()">Pubblica Recensione</button>
+            <button class="btn-secondary" (click)="toggleFormRecensione()">Annulla</button>
+          </div>
+        </div>
 
+        <!-- Lista Recensioni -->
+        <div class="review-item modern-card" *ngFor="let r of film?.recensioni">
           <div *ngIf="recensioneInModificaId !== r.id">
-            <div class="review-header" style="display: flex; justify-content: space-between;">
-              <div>
-                <strong>{{ r.nomeCliente }}</strong>
-                <span class="stars" style="margin-left: 10px;">{{ '★'.repeat(r.stelle) }}{{ '☆'.repeat(5-r.stelle) }}</span>
+            <div class="review-header">
+              <div class="reviewer-info">
+                <div class="reviewer-avatar">
+                  {{ r.nomeCliente.charAt(0).toUpperCase() }}
+                </div>
+                <div class="reviewer-details">
+                  <strong>{{ r.nomeCliente }}</strong>
+                  <div class="review-meta">
+                    <span class="stars">{{ '★'.repeat(r.stelle) }}<span class="empty-stars">{{ '★'.repeat(5-r.stelle) }}</span></span>
+                    <span class="separator">•</span>
+                    <span class="date">{{ r.data | date:'dd MMMM yyyy' }}</span>
+                  </div>
+                </div>
               </div>
 
               <div class="review-actions" *ngIf="r.emailCliente === currentUserEmail || isAdmin">
                 <button *ngIf="r.emailCliente === currentUserEmail" class="btn-icon-small edit" (click)="avviaModifica(r)" title="Modifica">✏️</button>
-
                 <button class="btn-icon-small delete" (click)="eliminaRecensione(r.id)" [title]="isAdmin ? 'Modera (Elimina)' : 'Elimina la tua recensione'">🗑️</button>
               </div>
             </div>
 
-            <p>{{ r.commento }}</p>
-            <small>Recensito il {{ r.data | date:'dd MMMM yyyy' }}</small>
+            <div class="review-body">
+              <p>{{ r.commento }}</p>
+            </div>
           </div>
 
-          <div *ngIf="recensioneInModificaId === r.id" class="add-review-box inline-edit-box" style="margin-bottom: 0;">
+          <!-- Modifica Recensione in linea -->
+          <div *ngIf="recensioneInModificaId === r.id" class="edit-review-panel">
+            <h5 class="edit-panel-title">Modifica la tua recensione</h5>
             <div class="star-rating">
-              <span *ngFor="let s of [1,2,3,4,5]" (click)="editVoto = s" [class.active]="editVoto >= s">★</span>
+              <span *ngFor="let s of [1,2,3,4,5]" (click)="setEditVoto(s)" [class.active]="editVoto >= s">★</span>
             </div>
-            <textarea [(ngModel)]="editCommento" rows="3"></textarea>
-            <div style="display: flex; gap: 0.5rem;">
-              <button class="btn-primary-large" style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;" (click)="salvaModifica(r.id)">Salva</button>
-              <button class="btn-primary-large" style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem; background: #9ca3af;" (click)="annullaModifica()">Annulla</button>
+            <textarea [(ngModel)]="editCommento" rows="4" class="modern-textarea"></textarea>
+            <div class="form-actions">
+              <button class="btn-primary-large" style="width: auto;" (click)="salvaModifica(r.id)">Salva Modifiche</button>
+              <button class="btn-secondary" (click)="annullaModifica()">Annulla</button>
             </div>
           </div>
-
         </div>
 
-        <div *ngIf="film?.recensioni?.length === 0" class="empty-state-dashed" style="padding: 2rem;">
-          <p>Nessuna recensione ancora. Sii il primo a condividere un'opinione!</p>
+        <div *ngIf="film?.recensioni?.length === 0" class="empty-state-dashed">
+          <div class="empty-icon">⭐</div>
+          <p>Nessuna recensione ancora.</p>
+          <span>Sii il primo a condividere un'opinione su questo film!</span>
         </div>
       </div>
+
     </div>
 
     <div class="similar-movies-section" *ngIf="activeTab === 'simili'">

@@ -6,8 +6,8 @@ import { CartService } from '../../../services/cart';
 import { FilmResponse } from '../../../models/film.model';
 import { ClienteService } from '../../../services/cliente';
 import { AuthService } from '../../../services/auth';
-import {FormsModule} from '@angular/forms';
-import {NotificationService} from '../../../services/notification.service';
+import { FormsModule } from '@angular/forms';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-dettaglio-film',
@@ -30,6 +30,7 @@ export class DettaglioFilmComponent implements OnInit {
   editVoto = 5;
   editCommento = '';
   filmEspansi: Set<number> = new Set<number>();
+  mostraFormRecensione = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -140,6 +141,66 @@ export class DettaglioFilmComponent implements OnInit {
   votoSelezionato = 5;
   nuovoCommento = '';
 
+  toggleFormRecensione() {
+    this.mostraFormRecensione = !this.mostraFormRecensione;
+  }
+
+  get totalReviews(): number {
+    return this.film?.recensioni?.length || 0;
+  }
+
+  get averageRating(): string {
+    if (this.totalReviews === 0) return '0,00';
+    const sum = this.film!.recensioni!.reduce((acc, curr) => acc + curr.stelle, 0);
+    return (sum / this.totalReviews).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  get avgRatingNumber(): number {
+    if (this.totalReviews === 0) return 0;
+    const sum = this.film!.recensioni!.reduce((acc, curr) => acc + curr.stelle, 0);
+    return sum / this.totalReviews;
+  }
+
+  get ratingSubtitle(): string {
+    const avg = this.avgRatingNumber;
+    if (this.totalReviews === 0) return 'Nessuna recensione';
+    if (avg >= 4.5) return 'Da vedere assolutamente';
+    if (avg >= 4.0) return 'Molto consigliato';
+    if (avg >= 3.0) return 'Nella media';
+    if (avg >= 2.0) return 'Sotto le aspettative';
+    return 'Da evitare';
+  }
+
+  getRatingDistribution(): { stelle: number, count: number, percentage: number }[] {
+    const defaultDist = [
+      { stelle: 5, count: 0, percentage: 0 },
+      { stelle: 4, count: 0, percentage: 0 },
+      { stelle: 3, count: 0, percentage: 0 },
+      { stelle: 2, count: 0, percentage: 0 },
+      { stelle: 1, count: 0, percentage: 0 }
+    ];
+
+    if (!this.film?.recensioni || this.film.recensioni.length === 0) {
+      return defaultDist;
+    }
+
+    const total = this.totalReviews;
+    const distribution = defaultDist.map(d => ({ ...d }));
+
+    this.film.recensioni.forEach((r: any) => {
+      const idx = distribution.findIndex(d => d.stelle === r.stelle);
+      if (idx !== -1) {
+        distribution[idx].count++;
+      }
+    });
+
+    distribution.forEach(d => {
+      d.percentage = (d.count / total) * 100;
+    });
+
+    return distribution;
+  }
+
   inviaRecensione() {
     if (!this.nuovoCommento.trim() || !this.film) return;
 
@@ -174,6 +235,10 @@ export class DettaglioFilmComponent implements OnInit {
     this.recensioneInModificaId = r.id;
     this.editVoto = r.stelle;
     this.editCommento = r.commento;
+  }
+
+  setEditVoto(voto: number) {
+    this.editVoto = voto;
   }
 
   annullaModifica() {
