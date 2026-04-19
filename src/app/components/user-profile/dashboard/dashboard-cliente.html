@@ -51,7 +51,13 @@
             <input type="text" formControlName="cognome" class="modern-input">
           </div>
         </div>
-
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" formControlName="email" class="modern-input">
+          <small class="text-danger" *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched">
+            Inserisci un'email valida.
+          </small>
+        </div>
         <div class="form-actions">
           <button type="button" class="btn-cancel" (click)="toggleEditMode()">Annulla</button>
           <button type="submit" class="btn-primary" [disabled]="editForm.invalid || isLoading">Salva Modifiche</button>

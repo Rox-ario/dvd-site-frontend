@@ -54,7 +54,8 @@ export class DashboardClienteComponent implements OnInit {
   ) {
     this.editForm = this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(2)]],
-      cognome: ['', [Validators.required, Validators.minLength(2)]]
+      cognome: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]]
     });
   }
 
@@ -164,7 +165,8 @@ export class DashboardClienteComponent implements OnInit {
     if (!this.isEditing && this.profilo) {
       this.editForm.patchValue({
         nome: this.profilo.nome,
-        cognome: this.profilo.cognome
+        cognome: this.profilo.cognome,
+        email: this.profilo.email
       });
     }
     this.cdr.detectChanges(); // Consigliato per transizioni UI immediate

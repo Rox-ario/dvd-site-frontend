@@ -12,4 +12,5 @@ export interface ClienteProfileResponse {
 export interface AggiornaAnagraficaRequest {
   nome: string;
   cognome: string;
+  email: string;
 }
