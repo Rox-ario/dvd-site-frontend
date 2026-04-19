@@ -24,10 +24,16 @@
               <h1 class="user-name">{{ profilo.nome }} {{ profilo.cognome }}</h1>
               <p class="user-email">{{ profilo.email }}</p>
             </div>
-            <button class="btn-edit" (click)="toggleEditMode()">
+            <button class="btn-edit" (click)="toggleEditMode()" [class.active-btn]="isEditing">
               {{ isEditing ? 'Annulla' : 'Modifica Profilo' }}
             </button>
+            <button class="btn-edit btn-password" (click)="togglePasswordMode()"
+              [class.active-btn]="isChangingPassword">
+              <span class="icon">🔒</span> {{ isChangingPassword ? 'Annulla' : 'Sicurezza' }}
+            </button>
           </div>
+
+
 
           <div class="user-badges">
             <span class="badge role-badge" [class.admin-role-badge]="isAdmin">{{ profilo.ruolo }}</span>
@@ -58,12 +64,105 @@
             Inserisci un'email valida.
           </small>
         </div>
+
         <div class="form-actions">
           <button type="button" class="btn-cancel" (click)="toggleEditMode()">Annulla</button>
           <button type="submit" class="btn-primary" [disabled]="editForm.invalid || isLoading">Salva Modifiche</button>
         </div>
       </form>
     </div>
+
+    <div class="edit-section modern-fade-in" *ngIf="isChangingPassword">
+      <form [formGroup]="passwordForm" (ngSubmit)="salvaPassword()" class="edit-profile-form" autocomplete="off">
+        <h3>🔐 Sicurezza Account</h3>
+
+        <!-- Vecchia password -->
+        <div class="form-group pw-field-group">
+          <label for="vecchiaPassword">Password attuale</label>
+          <div class="pw-input-wrapper">
+            <input
+              [type]="showVecchia ? 'text' : 'password'"
+              id="vecchiaPassword"
+              formControlName="vecchiaPassword"
+              class="modern-input"
+              placeholder="Inserisci la password attuale"
+              autocomplete="current-password"
+            >
+            <button type="button" class="pw-toggle" (click)="showVecchia = !showVecchia" [attr.aria-label]="showVecchia ? 'Nascondi password' : 'Mostra password'">
+              <span>{{ showVecchia ? '🙈' : '👁️' }}</span>
+            </button>
+          </div>
+          <small class="text-danger" *ngIf="passwordForm.get('vecchiaPassword')?.invalid && passwordForm.get('vecchiaPassword')?.touched">
+            La password attuale è obbligatoria.
+          </small>
+        </div>
+
+        <!-- Nuova password + strength -->
+        <div class="form-group pw-field-group">
+          <label for="nuovaPassword">Nuova password</label>
+          <div class="pw-input-wrapper">
+            <input
+              [type]="showNuova ? 'text' : 'password'"
+              id="nuovaPassword"
+              formControlName="nuovaPassword"
+              class="modern-input"
+              placeholder="Minimo 8 caratteri"
+              autocomplete="new-password"
+            >
+            <button type="button" class="pw-toggle" (click)="showNuova = !showNuova" [attr.aria-label]="showNuova ? 'Nascondi password' : 'Mostra password'">
+              <span>{{ showNuova ? '🙈' : '👁️' }}</span>
+            </button>
+          </div>
+          <!-- Strength indicator -->
+          <div class="pw-strength-bar" *ngIf="passwordForm.get('nuovaPassword')?.value">
+            <div class="pw-strength-track">
+              <div class="pw-strength-fill" [class]="'strength-' + getPasswordStrength().level" [style.width]="getPasswordStrength().percent + '%'"></div>
+            </div>
+            <span class="pw-strength-label" [class]="'label-' + getPasswordStrength().level">{{ getPasswordStrength().label }}</span>
+          </div>
+          <small class="text-danger" *ngIf="passwordForm.get('nuovaPassword')?.errors?.['required'] && passwordForm.get('nuovaPassword')?.touched">
+            La nuova password è obbligatoria.
+          </small>
+          <small class="text-danger" *ngIf="passwordForm.get('nuovaPassword')?.errors?.['minlength'] && passwordForm.get('nuovaPassword')?.touched">
+            La password deve contenere almeno 8 caratteri.
+          </small>
+        </div>
+
+        <!-- Conferma password -->
+        <div class="form-group pw-field-group">
+          <label for="confermaNuovaPassword">Conferma nuova password</label>
+          <div class="pw-input-wrapper">
+            <input
+              [type]="showConferma ? 'text' : 'password'"
+              id="confermaNuovaPassword"
+              formControlName="confermaNuovaPassword"
+              class="modern-input"
+              [class.input-match]="!passwordForm.hasError('mismatch') && passwordForm.get('confermaNuovaPassword')?.value"
+              [class.input-mismatch]="passwordForm.hasError('mismatch') && passwordForm.get('confermaNuovaPassword')?.dirty"
+              placeholder="Ripeti la nuova password"
+              autocomplete="new-password"
+            >
+            <button type="button" class="pw-toggle" (click)="showConferma = !showConferma" [attr.aria-label]="showConferma ? 'Nascondi password' : 'Mostra password'">
+              <span>{{ showConferma ? '🙈' : '👁️' }}</span>
+            </button>
+          </div>
+          <small class="text-success-msg" *ngIf="!passwordForm.hasError('mismatch') && passwordForm.get('confermaNuovaPassword')?.value && passwordForm.get('confermaNuovaPassword')?.dirty">
+            ✓ Le password coincidono.
+          </small>
+          <small class="text-danger" *ngIf="passwordForm.hasError('mismatch') && passwordForm.get('confermaNuovaPassword')?.dirty">
+            Le password non coincidono.
+          </small>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="togglePasswordMode()">Annulla</button>
+          <button type="submit" class="btn-primary" [disabled]="passwordForm.invalid || isLoading">
+            {{ isLoading ? 'Salvataggio...' : 'Aggiorna Password' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
 
     <!-- ============================== -->
     <!-- TABS NAVIGATION                -->
@@ -72,34 +171,21 @@
 
       <!-- ADMIN TABS -->
       <ng-container *ngIf="isAdmin">
-        <button
-          class="tab-btn"
-          [class.active]="activeTab === 'pannello'"
-          (click)="setTab('pannello')">
+        <button class="tab-btn" [class.active]="activeTab === 'pannello'" (click)="setTab('pannello')">
           <span class="tab-icon">🎛️</span> Pannello di Controllo
         </button>
-        <a
-          routerLink="/admin/gestione-film"
-          class="tab-btn tab-link">
+        <a routerLink="/admin/gestione-film" class="tab-btn tab-link">
           <span class="tab-icon">🎬</span> Gestione Film
         </a>
       </ng-container>
 
       <!-- SOLO CLIENTE -->
-      <button
-        *ngIf="!isAdmin"
-        class="tab-btn"
-        [class.active]="activeTab === 'ordini'"
-        (click)="setTab('ordini')">
+      <button *ngIf="!isAdmin" class="tab-btn" [class.active]="activeTab === 'ordini'" (click)="setTab('ordini')">
         <span class="tab-icon">📦</span> Storico Ordini
       </button>
 
       <!-- SOLO CLIENTE -->
-      <button
-        *ngIf="!isAdmin"
-        class="tab-btn"
-        [class.active]="activeTab === 'preferiti'"
-        (click)="setTab('preferiti')">
+      <button *ngIf="!isAdmin" class="tab-btn" [class.active]="activeTab === 'preferiti'" (click)="setTab('preferiti')">
         <span class="tab-icon">🤍</span> I Tuoi Preferiti
       </button>
     </div>
@@ -152,36 +238,33 @@
         <div class="table-container" *ngIf="!isLoadingAdmin && ordini.length > 0">
           <table class="admin-table">
             <thead>
-            <tr>
-              <th>ID</th>
-              <th>Data Acq.</th>
-              <th>Articoli</th>
-              <th>Incasso</th>
-              <th>Stato Spedizione</th>
-            </tr>
+              <tr>
+                <th>ID</th>
+                <th>Data Acq.</th>
+                <th>Articoli</th>
+                <th>Incasso</th>
+                <th>Stato Spedizione</th>
+              </tr>
             </thead>
             <tbody>
-            <tr *ngFor="let ordine of ordiniFiltrati">
-              <td class="fw-bold">#{{ ordine.numeroOrdine }}</td>
-              <td>{{ ordine.dataAcquisto | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td>
-                <ul class="articoli-mini">
-                  <li *ngFor="let r of ordine.righe">{{ r.quantita }}x {{ r.titoloFilm }}</li>
-                </ul>
-              </td>
-              <td class="fw-bold">{{ ordine.totale | currency:'EUR':'symbol':'1.2-2' }}</td>
-              <td>
-                <select
-                  class="status-select"
-                  [ngClass]="ordine.stato.toLowerCase()"
-                  [ngModel]="ordine.stato"
-                  (change)="cambiaStato(ordine, $event)">
-                  <option *ngFor="let stato of statiDisponibili" [value]="stato">
-                    {{ stato.replace('_', ' ') }}
-                  </option>
-                </select>
-              </td>
-            </tr>
+              <tr *ngFor="let ordine of ordiniFiltrati">
+                <td class="fw-bold">#{{ ordine.numeroOrdine }}</td>
+                <td>{{ ordine.dataAcquisto | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <ul class="articoli-mini">
+                    <li *ngFor="let r of ordine.righe">{{ r.quantita }}x {{ r.titoloFilm }}</li>
+                  </ul>
+                </td>
+                <td class="fw-bold">{{ ordine.totale | currency:'EUR':'symbol':'1.2-2' }}</td>
+                <td>
+                  <select class="status-select" [ngClass]="ordine.stato.toLowerCase()" [ngModel]="ordine.stato"
+                    (change)="cambiaStato(ordine, $event)">
+                    <option *ngFor="let stato of statiDisponibili" [value]="stato">
+                      {{ stato.replace('_', ' ') }}
+                    </option>
+                  </select>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

@@ -27,7 +27,14 @@ export class DashboardClienteComponent implements OnInit {
   activeTab: 'ordini' | 'preferiti' | 'pannello' = 'preferiti';
 
   isEditing = false;
+  isChangingPassword = false;
   editForm: FormGroup;
+  passwordForm!: FormGroup;
+
+  // Show/hide password toggles
+  showVecchia = false;
+  showNuova = false;
+  showConferma = false;
   isLoading = false;
   errorMessage = '';
 
@@ -57,7 +64,18 @@ export class DashboardClienteComponent implements OnInit {
       cognome: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]]
     });
+
+    this.passwordForm = this.fb.group({
+      vecchiaPassword: ['', Validators.required],
+      nuovaPassword: ['', [Validators.required, Validators.minLength(8)]],
+      confermaNuovaPassword: ['', Validators.required]
+    }, { validators: this.passwordMatchValidator });
   }
+
+  passwordMatchValidator = (g: import('@angular/forms').AbstractControl) => {
+    return g.get('nuovaPassword')?.value === g.get('confermaNuovaPassword')?.value
+      ? null : { 'mismatch': true };
+  };
 
   ngOnInit(): void {
     // Determina il ruolo
@@ -162,6 +180,11 @@ export class DashboardClienteComponent implements OnInit {
 
   toggleEditMode() {
     this.isEditing = !this.isEditing;
+    // Se stavamo cambiando la password, chiudiamo quel form
+    if (this.isEditing) {
+      this.isChangingPassword = false;
+    }
+    
     if (!this.isEditing && this.profilo) {
       this.editForm.patchValue({
         nome: this.profilo.nome,
@@ -170,6 +193,56 @@ export class DashboardClienteComponent implements OnInit {
       });
     }
     this.cdr.detectChanges(); // Consigliato per transizioni UI immediate
+  }
+
+  togglePasswordMode() {
+    this.isChangingPassword = !this.isChangingPassword;
+    if (this.isChangingPassword) {
+      this.isEditing = false;
+      this.passwordForm.reset();
+    }
+    // Reset show/hide on open/close
+    this.showVecchia = false;
+    this.showNuova = false;
+    this.showConferma = false;
+    this.cdr.detectChanges();
+  }
+
+  getPasswordStrength(): { level: string; percent: number; label: string } {
+    const pw: string = this.passwordForm.get('nuovaPassword')?.value || '';
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+    if (score <= 1) return { level: 'weak',   percent: 25,  label: 'Debole' };
+    if (score === 2) return { level: 'fair',   percent: 50,  label: 'Sufficiente' };
+    if (score === 3) return { level: 'good',   percent: 75,  label: 'Buona' };
+    return              { level: 'strong', percent: 100, label: 'Ottima' };
+  }
+
+  salvaPassword() {
+    if (this.passwordForm.invalid) return;
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    // Assumendo che esista un metodo modificaPassword in clienteService
+    this.clienteService.modificaPassword(this.passwordForm.value).subscribe({
+      next: () => {
+        this.notificationService.success("Password aggiornata correttamente.");
+        this.isChangingPassword = false;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || err.error || "Errore durante il cambio password.";
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   protected getPuntiFedelta()

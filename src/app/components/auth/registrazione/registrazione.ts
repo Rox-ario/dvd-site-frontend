@@ -33,7 +33,8 @@ export class RegistrazioneComponent {
   }
 
   // Validatore Custom: controlla se password e confermaPassword coincidono
-  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  // Definito come arrow function per mantenere il contesto `this` corretto
+  passwordMatchValidator = (control: AbstractControl): ValidationErrors | null => {
     const password = control.get('password')?.value;
     const conferma = control.get('confermaPassword')?.value;
 
@@ -43,7 +44,7 @@ export class RegistrazioneComponent {
     } else {
       return null;
     }
-  }
+  };
 
   onSubmit() {
     if (this.registerForm.invalid) {

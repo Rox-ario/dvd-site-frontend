@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ClienteProfileResponse, AggiornaAnagraficaRequest } from '../models/cliente.model';
+import { ClienteProfileResponse, AggiornaAnagraficaRequest, CambiaPasswordRequest } from '../models/cliente.model';
 import { FilmResponse } from '../models/film.model';
 
 @Injectable({
@@ -10,7 +10,7 @@ import { FilmResponse } from '../models/film.model';
 export class ClienteService {
   private readonly API_URL = 'http://localhost:8080/api/clienti/me';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   ottieniProfilo(): Observable<ClienteProfileResponse> {
     return this.http.get<ClienteProfileResponse>(`${this.API_URL}/profilo`);
@@ -33,5 +33,9 @@ export class ClienteService {
 
   ottieniIdPreferiti(): Observable<number[]> {
     return this.http.get<number[]>(`${this.API_URL}/preferiti/ids`);
+  }
+
+  modificaPassword(dati: CambiaPasswordRequest): Observable<string> {
+    return this.http.patch(`${this.API_URL}/password`, dati, { responseType: 'text' });
   }
 }

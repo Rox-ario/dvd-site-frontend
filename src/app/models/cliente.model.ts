@@ -14,3 +14,8 @@ export interface AggiornaAnagraficaRequest {
   cognome: string;
   email: string;
 }
+
+export interface CambiaPasswordRequest {
+  vecchiaPassword: string;
+  nuovaPassword: string;
+}
