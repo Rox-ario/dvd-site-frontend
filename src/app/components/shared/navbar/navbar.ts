@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { Observable, map } from 'rxjs';
 import { AuthService } from '../../../services/auth';
 import { CartService } from '../../../services/cart';
-import { Ruolo } from '../../../models/auth.model';
 
 @Component({
   selector: 'app-navbar',
@@ -14,41 +13,29 @@ import { Ruolo } from '../../../models/auth.model';
   styleUrls: ['./navbar.css']
 })
 export class NavbarComponent implements OnInit {
-  // Flussi reattivi per guidare l'interfaccia
-  isLoggedIn$!: Observable<boolean>;
-  isAdmin$!: Observable<boolean>;
-  isCliente$!: Observable<boolean>;
   cartItemCount$!: Observable<number>;
 
   constructor(
-    private authService: AuthService,
-    private cartService: CartService,
-    private router: Router
+    public authService: AuthService,
+    private cartService: CartService
   ) {}
 
   ngOnInit(): void {
-    // 1. L'utente è loggato se esiste un currentUser
-    this.isLoggedIn$ = this.authService.currentUser$.pipe(
-      map(user => !!user)
-    );
-
-    // 2. È admin se il ruolo corrisponde
-    this.isAdmin$ = this.authService.currentUser$.pipe(
-      map(user => user?.ruolo === Ruolo.ADMIN)
-    );
-
-    this.isCliente$ = this.authService.currentUser$.pipe(
-      map(user => user?.ruolo === Ruolo.CLIENTE)
-    );
-
-    // 3. Il totale nel carrello è la somma delle quantità fisiche, non solo delle righe
     this.cartItemCount$ = this.cartService.cartItems$.pipe(
       map(items => items.reduce((acc, item) => acc + item.quantita, 0))
     );
   }
 
+  // Getter reattivi basati sul nuovo AuthService
+  get isLoggedIn(): boolean { return this.authService.isLoggedIn(); }
+  get isAdmin(): boolean { return this.authService.isAdmin(); }
+  get isCliente(): boolean { return this.isLoggedIn && !this.isAdmin; }
+
+  login(): void {
+    this.authService.login(); // Innesca Keycloak
+  }
+
   logout(): void {
     this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 }

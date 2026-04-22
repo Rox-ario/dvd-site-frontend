@@ -9,18 +9,6 @@ export interface AuthResponse {
   ruolo: Ruolo;
 }
 
-export interface LoginRequest {
-  email: string;
-  password?: string;
-}
-
-export interface RegistrazioneRequest {
-  nome: string;
-  cognome: string;
-  email: string;
-  password?: string;
-}
-
 export interface RigaOrdineRequest {
   idFilm: number;
   quantita: number;

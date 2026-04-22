@@ -1,8 +1,13 @@
 <app-navbar></app-navbar>
-<main>
+
+<div *ngIf="isSyncing()" class="jit-sync-overlay">
+  <div class="spinner"></div>
+  <h2>Sincronizzazione account in corso...</h2>
+</div>
+
+<main [class.blur-content]="isSyncing()">
   <router-outlet></router-outlet>
 </main>
 
-<!-- Global UI overlays -->
 <app-toast></app-toast>
 <app-confirm-dialog></app-confirm-dialog>

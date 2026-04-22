@@ -1,14 +1,12 @@
 <nav class="navbar">
-
   <div class="navbar-brand">
     <a routerLink="/catalogo" class="logo">🎬 DVD Store</a>
   </div>
 
   <div class="navbar-menu">
-
     <a routerLink="/catalogo" routerLinkActive="active" class="nav-link">Catalogo</a>
 
-    <ng-container *ngIf="isCliente$ | async">
+    <ng-container *ngIf="isCliente">
       <a routerLink="/carrello" routerLinkActive="active" class="nav-link cart-link">
         🛒 Carrello
         <span class="cart-badge" *ngIf="(cartItemCount$ | async) as count">{{ count }}</span>
@@ -16,16 +14,14 @@
     </ng-container>
 
     <div class="auth-section">
-
-      <ng-container *ngIf="!(isLoggedIn$ | async)">
-        <a routerLink="/auth/login" class="btn-primary-outline">Accedi</a>
+      <ng-container *ngIf="!isLoggedIn">
+        <button (click)="login()" class="btn-primary-outline">Accedi</button>
       </ng-container>
 
-      <ng-container *ngIf="isLoggedIn$ | async">
+      <ng-container *ngIf="isLoggedIn">
         <a routerLink="/profilo" routerLinkActive="active" class="nav-link">Profilo</a>
         <button (click)="logout()" class="btn-text text-danger">Esci</button>
       </ng-container>
-
     </div>
   </div>
 </nav>

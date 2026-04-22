@@ -3,31 +3,7 @@ import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
-
-  // 1. ROTTE PUBBLICHE (Autenticazione)
-  // Non serve essere loggati.
-  {
-    path: 'auth',
-    children: [
-      {
-        path: 'login',
-        // Lazy loading: il file login.ts viene scaricato solo se l'utente va qui
-        loadComponent: () => import('./components/auth/login/login').then(m => m.LoginComponent)
-      },
-      {
-        path: 'registrazione',
-        loadComponent: () => import('./components/auth/registrazione/registrazione').then(m => m.RegistrazioneComponent)
-      },
-      {
-        path: 'recupero-password',
-        loadComponent: () => import('./components/auth/recupero-password/recupero-password').then(m => m.RecuperoPasswordComponent)
-      },
-      { path: '', redirectTo: 'login', pathMatch: 'full' }
-    ]
-  },
-
-  // 2. ROTTE PUBBLICHE (Catalogo Clienti)
-  // Accessibili a tutti (o con un layout specifico per lo store)
+  // 1. ROTTE PUBBLICHE (Catalogo Clienti)
   {
     path: '',
     children: [
@@ -43,8 +19,7 @@ export const routes: Routes = [
     ]
   },
 
-  // 3. AREA PRIVATA CLIENTE (Profilo, Storico Ordini, Preferiti)
-  // Protetta dalla authGuard: se non sei loggato, vieni sbattuto fuori
+  // 2. AREA PRIVATA CLIENTE (Protetta dalla authGuard, reindirizza a Keycloak se non loggato)
   {
     path: 'profilo',
     canActivate: [authGuard],
@@ -66,9 +41,7 @@ export const routes: Routes = [
     loadComponent: () => import('./components/store/checkout/checkout').then(m => m.CheckoutComponent)
   },
 
-  // 4. AREA ADMIN (Dashboard Gestionale)
-  // La dashboard admin è ora integrata nel profilo (/profilo).
-  // Manteniamo la gestione film come rotta separata e un redirect per backward compatibility.
+  // 3. AREA ADMIN
   {
     path: 'admin',
     canActivate: [adminGuard],
@@ -82,7 +55,6 @@ export const routes: Routes = [
         path: 'gestione-film',
         loadComponent: () => import('./components/admin/gestione-film/gestione-film').then(m => m.GestioneFilmComponent)
       }
-      // ... gestione attori, registi, ordini, ecc.
     ]
   },
 
@@ -91,9 +63,8 @@ export const routes: Routes = [
     loadComponent: () => import('./components/store/carrello/carrello').then(m => m.CarrelloComponent)
   },
 
-  // 5. ROTTA DI FALLBACK (Pagina 404)
   {
     path: '**',
-    redirectTo: 'catalogo' // o a una pagina 404 dedicata
+    redirectTo: 'catalogo'
   }
 ];

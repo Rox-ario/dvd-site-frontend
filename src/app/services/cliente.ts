@@ -34,8 +34,4 @@ export class ClienteService {
   ottieniIdPreferiti(): Observable<number[]> {
     return this.http.get<number[]>(`${this.API_URL}/preferiti/ids`);
   }
-
-  modificaPassword(dati: CambiaPasswordRequest): Observable<string> {
-    return this.http.patch(`${this.API_URL}/password`, dati, { responseType: 'text' });
-  }
 }

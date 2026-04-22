@@ -1,16 +1,15 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
-  const router = inject(Router);
 
   if (authService.isLoggedIn()) {
-    return true; // Ha il token, lo lasciamo passare
+    return true;
   }
 
-  // Non è loggato. Lo reindirizziamo al login.
-  // Bonus UX: potremmo salvare lo 'state.url' per rimandarlo alla pagina che voleva visitare dopo il login.
-  return router.createUrlTree(['/auth/login']);
+  // L'utente non è loggato, lo mandiamo a Keycloak passando l'URL di destinazione
+  authService.login(state.url);
+  return false;
 };

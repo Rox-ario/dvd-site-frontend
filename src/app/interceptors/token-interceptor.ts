@@ -1,19 +1,18 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { AuthService } from '../services/auth';
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
-  const router = inject(Router);
   const token = authService.getToken();
 
-  const isAuthRoute = req.url.includes('/api/auth');
+  // Intercettiamo solo le chiamate dirette al nostro backend Spring Boot
+  const isApiRoute = req.url.includes('/api/');
 
   let clonedReq = req;
-  if (token && !isAuthRoute) {
+  if (token && isApiRoute) {
     clonedReq = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
@@ -21,14 +20,11 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
     });
   }
 
-  // Lasciamo passare la richiesta, ma restiamo in ascolto della risposta (Pipeline RxJS)
   return next(clonedReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Se il server ci sbatte la porta in faccia (401 Token Scaduto)
       if (error.status === 401) {
-        console.warn("Sessione scaduta intercettata. Logout forzato.");
-        authService.logout(); // Pulisce il localStorage
-        router.navigate(['/auth/login'], { queryParams: { avviso: 'scaduta' } });
+        console.warn("Non autorizzato o sessione scaduta. Reindirizzamento al login.");
+        authService.logout();
       }
       return throwError(() => error);
     })
