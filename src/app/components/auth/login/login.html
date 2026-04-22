@@ -27,7 +27,10 @@
       </div>
 
       <div class="form-group">
-        <label for="password">Password</label>
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <label for="password">Password</label>
+          <a routerLink="/auth/recupero-password" style="font-size: 0.8rem; color: var(--primary-color); text-decoration: none;">Password dimenticata?</a>
+        </div>
         <input
           type="password"
           id="password"

@@ -18,6 +18,10 @@ export const routes: Routes = [
         path: 'registrazione',
         loadComponent: () => import('./components/auth/registrazione/registrazione').then(m => m.RegistrazioneComponent)
       },
+      {
+        path: 'recupero-password',
+        loadComponent: () => import('./components/auth/recupero-password/recupero-password').then(m => m.RecuperoPasswordComponent)
+      },
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   },

@@ -329,7 +329,8 @@
 
 /* --- Sezione Recensioni Modernizzata --- */
 .reviews-section {
-  max-width: 800px; /* Centrata e compatta */
+  max-width: 800px;
+  /* Centrata e compatta */
   margin: 0 auto;
   padding: 2rem 0;
   background: transparent;
@@ -431,8 +432,10 @@
 .progress-bar-bg {
   flex: 1;
   height: 12px;
-  background-color: #d1d5db; /* Grey come nello screen */
-  border-radius: 0; /* Squadrate come nello screen */
+  background-color: #d1d5db;
+  /* Grey come nello screen */
+  border-radius: 0;
+  /* Squadrate come nello screen */
   overflow: hidden;
 }
 
@@ -493,8 +496,14 @@
   color: #d1d5db;
 }
 
-.star-rating span { cursor: pointer; transition: color 0.2s;}
-.star-rating span.active { color: #f59e0b;}
+.star-rating span {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.star-rating span.active {
+  color: #f59e0b;
+}
 
 .add-review-box.modern h4 {
   margin-top: 0;
@@ -642,9 +651,19 @@
   margin-left: 0.5rem;
 }
 
-.btn-icon-small:hover { transform: scale(1.1); }
-.btn-icon-small.edit:hover { background: #dbeafe; color: #1e40af; }
-.btn-icon-small.delete:hover { background: #fee2e2; color: #991b1b; }
+.btn-icon-small:hover {
+  transform: scale(1.1);
+}
+
+.btn-icon-small.edit:hover {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.btn-icon-small.delete:hover {
+  background: #fee2e2;
+  color: #991b1b;
+}
 
 /* --- UI Tabs Container --- */
 .tabs-container {
@@ -816,17 +835,29 @@
 .add-review-box.glass-form::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 4px;
   background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
 }
 
 @keyframes slideDownFade {
-  from { opacity: 0; transform: translateY(-15px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.form-header-modern { margin-bottom: 1.5rem; }
+.form-header-modern {
+  margin-bottom: 1.5rem;
+}
+
 .form-header-modern h4 {
   margin: 0 0 0.5rem 0;
   font-size: 1.6rem;
@@ -852,19 +883,31 @@
   width: fit-content;
 }
 
-.rating-label { font-weight: 600; color: #4b5563; font-size: 1.05rem; }
+.rating-label {
+  font-weight: 600;
+  color: #4b5563;
+  font-size: 1.05rem;
+}
 
-.star-rating.interactive { margin: 0; }
+.star-rating.interactive {
+  margin: 0;
+}
+
 .star-rating.interactive .star-icon {
   font-size: 2.2rem;
   line-height: 1;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
 }
 
-.star-rating.interactive .star-icon:hover { transform: scale(1.2); color: #fbbf24; }
+.star-rating.interactive .star-icon:hover {
+  transform: scale(1.2);
+  color: #fbbf24;
+}
 
-.review-input-wrapper { margin-bottom: 1.5rem; }
+.review-input-wrapper {
+  margin-bottom: 1.5rem;
+}
 
 .modern-textarea.glass-input {
   background: #ffffff;
@@ -883,25 +926,66 @@
   background: #fffbfe;
 }
 
-.form-actions-glass { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0; }
+.form-actions-glass {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 0;
+}
 
 .btn-cancel-glass {
-  padding: 0.8rem 1.5rem; background-color: transparent; color: #6b7280;
-  border: none; font-weight: 600; font-size: 1.05rem; border-radius: 10px;
-  cursor: pointer; transition: all 0.2s;
+  padding: 0.8rem 1.5rem;
+  background-color: transparent;
+  color: #6b7280;
+  border: none;
+  font-weight: 600;
+  font-size: 1.05rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
-.btn-cancel-glass:hover { background-color: #f3f4f6; color: #111827; }
+
+.btn-cancel-glass:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
 
 .btn-submit-glass {
-  padding: 0.8rem 2rem; background: linear-gradient(135deg, #2563eb, #4f46e5);
-  color: white; border: none; font-weight: 700; font-size: 1.05rem;
-  border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
-  transition: all 0.3s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  padding: 0.8rem 2rem;
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: white;
+  border: none;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
-.btn-submit-glass:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35); }
-.btn-submit-glass:disabled { background: #d1d5db; color: #9ca3af; cursor: not-allowed; box-shadow: none; }
-.submit-icon { font-size: 1.2rem; transition: transform 0.2s; }
-.btn-submit-glass:hover:not(:disabled) .submit-icon { transform: translateX(4px); }
+
+.btn-submit-glass:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.btn-submit-glass:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.submit-icon {
+  font-size: 1.2rem;
+  transition: transform 0.2s;
+}
+
+.btn-submit-glass:hover:not(:disabled) .submit-icon {
+  transform: translateX(4px);
+}
 
 /* Stile del box nero che appare al passaggio del mouse */
 .tooltip-content {
@@ -1231,4 +1315,24 @@ button.badge-genre.collapse-action {
   position: relative;
   z-index: 1;
   /* Rimane sopra la virgoletta di sfondo */
+}
+
+.dist-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 1.1rem;
+  color: #374151;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  /* Aggiunto padding per creare un'area cliccabile più ampia */
+  border-radius: 8px;
+  /* Arrotondamento degli angoli per il background al passaggio del mouse */
+  transition: background-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Effetto hover per suggerire l'interattività senza bisogno di testi */
+.dist-row:hover {
+  background-color: #f3f4f6;
+  transform: scale(1.02);
 }

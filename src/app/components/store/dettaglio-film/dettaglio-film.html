@@ -147,6 +147,10 @@
         </div>
 
         <div class="rating-distributions">
+          <div
+            style="text-align: center; font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem; font-style: italic;">
+            💡 Clicca sulle barre per filtrare le recensioni
+          </div>
           <div class="dist-row" *ngFor="let m of getRatingDistribution()" (click)="impostaFiltroStelle(m.stelle)"
             [ngStyle]="{'opacity': (filtroStelle && filtroStelle !== m.stelle) ? '0.5' : '1', 'cursor': 'pointer', 'transition': 'opacity 0.2s'}">
             <span class="star-label">{{ m.stelle }}</span>
@@ -182,27 +186,25 @@
               <h4>Raccontaci la tua esperienza</h4>
               <p class="subtitle">Il tuo parere aiuta gli altri appassionati a scegliere il film giusto.</p>
             </div>
-            
+
             <div class="rating-container">
               <span class="rating-label">Il tuo voto:</span>
               <div class="star-rating interactive">
-                <span *ngFor="let s of [1,2,3,4,5]"
-                      (click)="votoSelezionato = s"
-                      [class.active]="votoSelezionato >= s"
-                      class="star-icon">★</span>
+                <span *ngFor="let s of [1,2,3,4,5]" (click)="votoSelezionato = s" [class.active]="votoSelezionato >= s"
+                  class="star-icon">★</span>
               </div>
             </div>
-            
+
             <div class="review-input-wrapper">
-              <textarea [(ngModel)]="nuovoCommento" 
-                        class="modern-textarea glass-input" 
-                        placeholder="Cosa ti è piaciuto o non ti è piaciuto di questo film? Condividi i dettagli..." 
-                        rows="5"></textarea>
+              <textarea [(ngModel)]="nuovoCommento" class="modern-textarea glass-input"
+                placeholder="Cosa ti è piaciuto o non ti è piaciuto di questo film? Condividi i dettagli..."
+                rows="5"></textarea>
             </div>
-            
+
             <div class="form-actions form-actions-glass">
               <button class="btn-cancel-glass" (click)="toggleFormRecensione()">Annulla</button>
-              <button class="btn-submit-glass" (click)="inviaRecensione()" [disabled]="!votoSelezionato || !nuovoCommento">
+              <button class="btn-submit-glass" (click)="inviaRecensione()"
+                [disabled]="!votoSelezionato || !nuovoCommento">
                 Pubblica Recensione <span class="submit-icon">→</span>
               </button>
             </div>
