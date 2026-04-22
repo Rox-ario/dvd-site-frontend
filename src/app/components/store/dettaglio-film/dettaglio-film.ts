@@ -24,7 +24,7 @@ export class DettaglioFilmComponent implements OnInit {
   isPreferito = false;
   isLoggedIn = false;
   isAdmin = false;
-  activeTab: 'recensioni' | 'simili' = 'recensioni';
+  activeTab: string = 'recensioni';
   currentUserEmail: string | null = null;
   recensioneInModificaId: number | null = null;
   editVoto = 5;
@@ -301,5 +301,21 @@ export class DettaglioFilmComponent implements OnInit {
     } else {
       this.filmEspansi.add(idFilm);
     }
+  }
+
+  filtroStelle: number | null = null;
+
+  impostaFiltroStelle(stelle: number | null) {
+    this.filtroStelle = this.filtroStelle === stelle ? null : stelle;
+  }
+
+  get recensioniMostrate(): any[] {
+    if (!this.film?.recensioni) return [];
+    
+    if (this.filtroStelle) {
+      return this.film.recensioni.filter(r => r.stelle === this.filtroStelle);
+    }
+    
+    return this.film.recensioni;
   }
 }

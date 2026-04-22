@@ -783,14 +783,13 @@
   background-color: #ffffff;
 }
 
+/* Stili moderni esistenti del tooltip */
 .tooltip-container {
   position: relative;
   display: inline-block;
   cursor: help;
-  /* Il cursore a punto interrogativo fa capire che c'è un'interazione possibile */
 }
 
-/* Colore differente per il badge "+X" per distinguerlo dai generi standard */
 .badge-extra {
   background-color: #e5e7eb;
   color: #4b5563;
@@ -800,6 +799,109 @@
 .tooltip-container:hover .badge-extra {
   background-color: #d1d5db;
 }
+
+/* Modulo Recensione Premium/Moderno */
+.add-review-box.glass-form {
+  background: linear-gradient(145deg, #ffffff, #f9fafb);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  padding: 2.5rem;
+  border-radius: 16px;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+  animation: slideDownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.add-review-box.glass-form::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-header-modern { margin-bottom: 1.5rem; }
+.form-header-modern h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.6rem;
+  color: #111827;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.form-header-modern .subtitle {
+  margin: 0;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.rating-container {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: #f3f4f6;
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  width: fit-content;
+}
+
+.rating-label { font-weight: 600; color: #4b5563; font-size: 1.05rem; }
+
+.star-rating.interactive { margin: 0; }
+.star-rating.interactive .star-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
+}
+
+.star-rating.interactive .star-icon:hover { transform: scale(1.2); color: #fbbf24; }
+
+.review-input-wrapper { margin-bottom: 1.5rem; }
+
+.modern-textarea.glass-input {
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.2rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s;
+}
+
+.modern-textarea.glass-input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.02);
+  background: #fffbfe;
+}
+
+.form-actions-glass { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0; }
+
+.btn-cancel-glass {
+  padding: 0.8rem 1.5rem; background-color: transparent; color: #6b7280;
+  border: none; font-weight: 600; font-size: 1.05rem; border-radius: 10px;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-cancel-glass:hover { background-color: #f3f4f6; color: #111827; }
+
+.btn-submit-glass {
+  padding: 0.8rem 2rem; background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: white; border: none; font-weight: 700; font-size: 1.05rem;
+  border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
+  transition: all 0.3s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+.btn-submit-glass:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35); }
+.btn-submit-glass:disabled { background: #d1d5db; color: #9ca3af; cursor: not-allowed; box-shadow: none; }
+.submit-icon { font-size: 1.2rem; transition: transform 0.2s; }
+.btn-submit-glass:hover:not(:disabled) .submit-icon { transform: translateX(4px); }
 
 /* Stile del box nero che appare al passaggio del mouse */
 .tooltip-content {

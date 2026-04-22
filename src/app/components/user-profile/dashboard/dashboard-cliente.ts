@@ -5,12 +5,12 @@ import { ClienteService } from '../../../services/cliente';
 import { ClienteProfileResponse } from '../../../models/cliente.model';
 import { FilmResponse } from '../../../models/film.model';
 import { StoricoOrdiniComponent } from '../storico-ordini/storico-ordini';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth';
 import { OrdineService } from '../../../services/ordine.service';
 import { NotificationService } from '../../../services/notification.service';
 import { OrdineResponse } from '../../../models/ordine.model';
 import { Ruolo } from '../../../models/auth.model';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard-cliente',
@@ -57,7 +57,8 @@ export class DashboardClienteComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
     private ordineService: OrdineService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private router: Router
   ) {
     this.editForm = this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(2)]],
@@ -110,7 +111,6 @@ export class DashboardClienteComponent implements OnInit {
         // 2. Controllo anti-null e normalizzazione
         if (dati) {
           this.profilo = dati;
-          this.profilo.puntiFedeltà = dati.puntiFedeltà || 0; // Garantiamo un valore numerico
           this.editForm.patchValue({
             nome: dati.nome || '',
             cognome: dati.cognome || ''
@@ -184,7 +184,7 @@ export class DashboardClienteComponent implements OnInit {
     if (this.isEditing) {
       this.isChangingPassword = false;
     }
-    
+
     if (!this.isEditing && this.profilo) {
       this.editForm.patchValue({
         nome: this.profilo.nome,
@@ -217,10 +217,10 @@ export class DashboardClienteComponent implements OnInit {
     if (/[0-9]/.test(pw)) score++;
     if (/[^A-Za-z0-9]/.test(pw)) score++;
 
-    if (score <= 1) return { level: 'weak',   percent: 25,  label: 'Debole' };
-    if (score === 2) return { level: 'fair',   percent: 50,  label: 'Sufficiente' };
-    if (score === 3) return { level: 'good',   percent: 75,  label: 'Buona' };
-    return              { level: 'strong', percent: 100, label: 'Ottima' };
+    if (score <= 1) return { level: 'weak', percent: 25, label: 'Debole' };
+    if (score === 2) return { level: 'fair', percent: 50, label: 'Sufficiente' };
+    if (score === 3) return { level: 'good', percent: 75, label: 'Buona' };
+    return { level: 'strong', percent: 100, label: 'Ottima' };
   }
 
   salvaPassword() {
@@ -228,13 +228,17 @@ export class DashboardClienteComponent implements OnInit {
 
     this.isLoading = true;
     this.errorMessage = '';
-    
-    // Assumendo che esista un metodo modificaPassword in clienteService
+
     this.clienteService.modificaPassword(this.passwordForm.value).subscribe({
       next: () => {
-        this.notificationService.success("Password aggiornata correttamente.");
+        this.notificationService.success("Password aggiornata correttamente. Per sicurezza, effettua nuovamente l'accesso.");
         this.isChangingPassword = false;
         this.isLoading = false;
+
+        // La soluzione: distruggiamo la vecchia sessione e forziamo il redirect
+        this.authService.logout();
+        this.router.navigate(['/login']);
+
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -243,11 +247,6 @@ export class DashboardClienteComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  protected getPuntiFedelta()
-  {
-    return this.profilo?.puntiFedeltà ?? 0; // Garantisce un numero anche se il campo è null o undefined
   }
 
   setTab(tab: 'ordini' | 'preferiti' | 'pannello') {

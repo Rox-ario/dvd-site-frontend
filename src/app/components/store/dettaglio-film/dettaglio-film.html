@@ -128,7 +128,7 @@
   <div class="tab-content">
 
     <div class="reviews-section" *ngIf="activeTab === 'recensioni'">
-      
+
       <!-- Blocco Statistiche Moderno -->
       <div class="dashboard-stats-card premium-stats-box">
         <div class="stats-header">
@@ -139,14 +139,16 @@
             <h4 class="score-subtitle" *ngIf="totalReviews > 0">{{ ratingSubtitle }}</h4>
             <h4 class="score-subtitle" *ngIf="totalReviews === 0" style="color: #6b7280;">Nessuna Recensione</h4>
             <div class="stars-and-count">
-              <span *ngFor="let s of [1,2,3,4,5]" [ngStyle]="{'color': s <= avgRatingNumber ? '#f59e0b' : '#e5e7eb'}">★</span>
+              <span *ngFor="let s of [1,2,3,4,5]"
+                [ngStyle]="{'color': s <= avgRatingNumber ? '#f59e0b' : '#e5e7eb'}">★</span>
               <a href="javascript:void(0)" class="review-count">({{ totalReviews }})</a>
             </div>
           </div>
         </div>
 
         <div class="rating-distributions">
-          <div class="dist-row" *ngFor="let m of getRatingDistribution()">
+          <div class="dist-row" *ngFor="let m of getRatingDistribution()" (click)="impostaFiltroStelle(m.stelle)"
+            [ngStyle]="{'opacity': (filtroStelle && filtroStelle !== m.stelle) ? '0.5' : '1', 'cursor': 'pointer', 'transition': 'opacity 0.2s'}">
             <span class="star-label">{{ m.stelle }}</span>
             <div class="progress-bar-bg">
               <div class="progress-bar-fill" [style.width.%]="m.percentage"></div>
@@ -156,76 +158,112 @@
         </div>
 
         <div class="button-wrapper">
-          <button class="btn-primary-large btn-write-review" *ngIf="film?.puoRecensire && !mostraFormRecensione" (click)="toggleFormRecensione()">
+          <button class="btn-primary-large btn-write-review" *ngIf="film?.puoRecensire && !mostraFormRecensione"
+            (click)="toggleFormRecensione()">
             Scrivi una recensione
           </button>
         </div>
       </div>
 
       <div class="reviews-list-container">
-        <!-- Form recensione -->
-        <div class="add-review-box modern" *ngIf="film?.puoRecensire && mostraFormRecensione">
-          <h4>Raccontaci la tua esperienza</h4>
-          <div class="star-rating">
-            <span *ngFor="let s of [1,2,3,4,5]"
-                  (click)="votoSelezionato = s"
-                  [class.active]="votoSelezionato >= s">★</span>
-          </div>
-          <textarea [(ngModel)]="nuovoCommento" placeholder="Scrivi qui la tua recensione..." rows="4"></textarea>
-          <div class="form-actions">
-            <button class="btn-primary-large" style="width: auto;" (click)="inviaRecensione()">Pubblica Recensione</button>
-            <button class="btn-secondary" (click)="toggleFormRecensione()">Annulla</button>
-          </div>
-        </div>
+        <div class="reviews-list-container">
 
-        <!-- Lista Recensioni -->
-        <div class="review-item modern-card" *ngFor="let r of film?.recensioni">
-          <div *ngIf="recensioneInModificaId !== r.id">
-            <div class="review-header">
-              <div class="reviewer-info">
-                <div class="reviewer-avatar">
-                  {{ r.nomeCliente.charAt(0).toUpperCase() }}
-                </div>
-                <div class="reviewer-details">
-                  <strong>{{ r.nomeCliente }}</strong>
-                  <div class="review-meta">
-                    <span class="stars">{{ '★'.repeat(r.stelle) }}<span class="empty-stars">{{ '★'.repeat(5-r.stelle) }}</span></span>
-                    <span class="separator">•</span>
-                    <span class="date">{{ r.data | date:'dd MMMM yyyy' }}</span>
+          <div *ngIf="filtroStelle"
+            style="background: #f3f4f6; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #374151;">Stai visualizzando le recensioni a <strong>{{ filtroStelle }}
+                stelle</strong>.</span>
+            <button (click)="impostaFiltroStelle(null)"
+              style="background: none; border: none; color: #ef4444; cursor: pointer; font-weight: 600;">✕ Rimuovi
+              filtro</button>
+          </div>
+          <!-- Form recensione modernizzato -->
+          <div class="add-review-box glass-form" *ngIf="film?.puoRecensire && mostraFormRecensione">
+            <div class="form-header-modern">
+              <h4>Raccontaci la tua esperienza</h4>
+              <p class="subtitle">Il tuo parere aiuta gli altri appassionati a scegliere il film giusto.</p>
+            </div>
+            
+            <div class="rating-container">
+              <span class="rating-label">Il tuo voto:</span>
+              <div class="star-rating interactive">
+                <span *ngFor="let s of [1,2,3,4,5]"
+                      (click)="votoSelezionato = s"
+                      [class.active]="votoSelezionato >= s"
+                      class="star-icon">★</span>
+              </div>
+            </div>
+            
+            <div class="review-input-wrapper">
+              <textarea [(ngModel)]="nuovoCommento" 
+                        class="modern-textarea glass-input" 
+                        placeholder="Cosa ti è piaciuto o non ti è piaciuto di questo film? Condividi i dettagli..." 
+                        rows="5"></textarea>
+            </div>
+            
+            <div class="form-actions form-actions-glass">
+              <button class="btn-cancel-glass" (click)="toggleFormRecensione()">Annulla</button>
+              <button class="btn-submit-glass" (click)="inviaRecensione()" [disabled]="!votoSelezionato || !nuovoCommento">
+                Pubblica Recensione <span class="submit-icon">→</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Lista Recensioni -->
+          <div class="review-item modern-card" *ngFor="let r of recensioniMostrate">
+            <div *ngIf="recensioneInModificaId !== r.id">
+              <div class="review-header">
+                <div class="reviewer-info">
+                  <div class="reviewer-avatar">
+                    {{ r.nomeCliente.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="reviewer-details">
+                    <strong>{{ r.nomeCliente }}</strong>
+                    <div class="review-meta">
+                      <span class="stars">{{ '★'.repeat(r.stelle) }}<span class="empty-stars">{{ '★'.repeat(5-r.stelle)
+                          }}</span></span>
+                      <span class="separator">•</span>
+                      <span class="date">{{ r.data | date:'dd MMMM yyyy' }}</span>
+                    </div>
                   </div>
                 </div>
+
+                <div class="review-actions" *ngIf="r.emailCliente === currentUserEmail || isAdmin">
+                  <button *ngIf="r.emailCliente === currentUserEmail" class="btn-icon-small edit"
+                    (click)="avviaModifica(r)" title="Modifica">✏️</button>
+                  <button class="btn-icon-small delete" (click)="eliminaRecensione(r.id)"
+                    [title]="isAdmin ? 'Modera (Elimina)' : 'Elimina la tua recensione'">🗑️</button>
+                </div>
               </div>
 
-              <div class="review-actions" *ngIf="r.emailCliente === currentUserEmail || isAdmin">
-                <button *ngIf="r.emailCliente === currentUserEmail" class="btn-icon-small edit" (click)="avviaModifica(r)" title="Modifica">✏️</button>
-                <button class="btn-icon-small delete" (click)="eliminaRecensione(r.id)" [title]="isAdmin ? 'Modera (Elimina)' : 'Elimina la tua recensione'">🗑️</button>
+              <div class="review-body">
+                <p>{{ r.commento }}</p>
               </div>
             </div>
 
-            <div class="review-body">
-              <p>{{ r.commento }}</p>
+            <!-- Modifica Recensione in linea -->
+            <div *ngIf="recensioneInModificaId === r.id" class="edit-review-panel">
+              <h5 class="edit-panel-title">Modifica la tua recensione</h5>
+              <div class="star-rating">
+                <span *ngFor="let s of [1,2,3,4,5]" (click)="setEditVoto(s)" [class.active]="editVoto >= s">★</span>
+              </div>
+              <textarea [(ngModel)]="editCommento" rows="4" class="modern-textarea"></textarea>
+              <div class="form-actions">
+                <button class="btn-primary-large" style="width: auto;" (click)="salvaModifica(r.id)">Salva
+                  Modifiche</button>
+                <button class="btn-secondary" (click)="annullaModifica()">Annulla</button>
+              </div>
             </div>
           </div>
 
-          <!-- Modifica Recensione in linea -->
-          <div *ngIf="recensioneInModificaId === r.id" class="edit-review-panel">
-            <h5 class="edit-panel-title">Modifica la tua recensione</h5>
-            <div class="star-rating">
-              <span *ngFor="let s of [1,2,3,4,5]" (click)="setEditVoto(s)" [class.active]="editVoto >= s">★</span>
-            </div>
-            <textarea [(ngModel)]="editCommento" rows="4" class="modern-textarea"></textarea>
-            <div class="form-actions">
-              <button class="btn-primary-large" style="width: auto;" (click)="salvaModifica(r.id)">Salva Modifiche</button>
-              <button class="btn-secondary" (click)="annullaModifica()">Annulla</button>
-            </div>
+          <div *ngIf="recensioniMostrate.length === 0" class="empty-state-dashed">
+            <div class="empty-icon">⭐</div>
+            <p *ngIf="!filtroStelle">Nessuna recensione ancora.</p>
+            <p *ngIf="filtroStelle">Nessuna recensione a {{ filtroStelle }} stelle.</p>
+            <span *ngIf="!filtroStelle">Sii il primo a condividere un'opinione su questo film!</span>
+            <span *ngIf="filtroStelle">Prova a selezionare un altro punteggio.</span>
           </div>
         </div>
 
-        <div *ngIf="film?.recensioni?.length === 0" class="empty-state-dashed">
-          <div class="empty-icon">⭐</div>
-          <p>Nessuna recensione ancora.</p>
-          <span>Sii il primo a condividere un'opinione su questo film!</span>
-        </div>
       </div>
 
     </div>
@@ -244,5 +282,6 @@
         </article>
       </div>
     </div>
+
   </div>
 </div>
