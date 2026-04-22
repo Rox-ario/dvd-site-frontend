@@ -19,14 +19,9 @@
         </div>
 
         <div class="user-main-info">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-              <h1 class="user-name">{{ profilo.nome }} {{ profilo.cognome }}</h1>
-              <p class="user-email">{{ profilo.email }}</p>
-            </div>
-            <button class="btn-edit" (click)="toggleEditMode()" [class.active-btn]="isEditing">
-              {{ isEditing ? 'Annulla' : 'Modifica Profilo' }}
-            </button>
+          <div>
+            <h1 class="user-name">{{ profilo.nome }} {{ profilo.cognome }}</h1>
+            <p class="user-email">{{ profilo.email }}</p>
           </div>
 
           <div class="user-badges">
@@ -36,43 +31,28 @@
       </div>
     </div>
 
-    <div class="edit-section modern-fade-in" *ngIf="isEditing">
-      <form [formGroup]="editForm" (ngSubmit)="salvaModifiche()" class="edit-profile-form">
-        <h3>Aggiorna i tuoi dati</h3>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Nome</label>
-            <input type="text" formControlName="nome" class="modern-input">
-          </div>
-          <div class="form-group">
-            <label>Cognome</label>
-            <input type="text" formControlName="cognome" class="modern-input">
-          </div>
+    <!-- Sicurezza e Accesso -->
+    <div class="security-card modern-fade-in">
+      <div class="security-card-inner">
+        <div class="security-icon-wrap">
+          <span class="security-icon">🔐</span>
         </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" formControlName="email" class="modern-input">
-          <small class="text-danger" *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched">
-            Inserisci un'email valida.
-          </small>
-        </div>
-        <div class="security-card mt-4">
-          <h3>Sicurezza e Accesso</h3>
-          <p class="text-muted">
-            La gestione delle credenziali, il cambio password e l'autenticazione a due fattori
-            sono protetti dal nostro sistema di sicurezza centrale.
+        <div class="security-info">
+          <h3 class="security-title">Sicurezza e Accesso</h3>
+          <p class="security-desc">
+            Gestisci le tue credenziali di accesso, il cambio password e l'autenticazione a due fattori
+            tramite il nostro sistema di sicurezza certificato.
           </p>
-          <button type="button" class="btn-secondary" (click)="gestisciAccountSicurezza()">
-            🔒 Gestisci Password e Sicurezza
-          </button>
         </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-cancel" (click)="toggleEditMode()">Annulla</button>
-          <button type="submit" class="btn-primary" [disabled]="editForm.invalid || isLoading">Salva Modifiche</button>
-        </div>
-      </form>
+        <button type="button" class="btn-credentials" (click)="gestisciAccountSicurezza()">
+          <span class="btn-credentials-icon">🔑</span>
+          <span class="btn-credentials-text">
+            <strong>Gestisci Credenziali</strong>
+            <small>Password &amp; 2FA</small>
+          </span>
+          <span class="btn-credentials-arrow">→</span>
+        </button>
+      </div>
     </div>
 
     <!-- ============================== -->

@@ -29,14 +29,38 @@ export class AuthService {
     this.oauthService.setupAutomaticSilentRefresh();
 
     // Inizializza il login e controlla se stiamo tornando da un redirect di Keycloak
-    this.oauthService.loadDiscoveryDocumentAndTryLogin().then(() => {
-      this.isDoneLoadingSubject.next(true);
-    });
+    this.oauthService.loadDiscoveryDocumentAndTryLogin()
+      .then(() => {
+        this.isDoneLoadingSubject.next(true);
+      })
+      .catch((err) => {
+        console.warn('Impossibile raggiungere Keycloak durante il boot:', err);
+        this.isDoneLoadingSubject.next(false);
+      });
   }
 
   public login(targetUrl?: string) {
-    // Salviamo la rotta a cui l'utente voleva accedere prima del login
-    this.oauthService.initCodeFlow(targetUrl || '/profilo');
+    // Salviamo la rotta a cui l'utente voleva accedere prima del login.
+    // Usiamo loadDiscoveryDocumentAndLogin() invece di initCodeFlow() così
+    // funziona anche se il discovery document non era stato caricato al boot.
+    // prompt: 'login' forza Keycloak a mostrare sempre la schermata di login
+    // anche se esiste già una sessione SSO attiva (evita l'auto-login dopo logout).
+    this.oauthService.customQueryParams = { prompt: 'login' };
+    this.oauthService.loadDiscoveryDocumentAndLogin({ state: targetUrl || '/profilo' })
+      .catch((err) => {
+        console.error('Errore durante il login con Keycloak:', err);
+        alert('Impossibile connettersi al server di autenticazione. Assicurati che Keycloak sia attivo su http://localhost:8081');
+      });
+  }
+
+  public register(): void {
+    // Costruisce l'URL diretto alla pagina di registrazione di Keycloak
+    const redirectUri = encodeURIComponent(authCodeFlowConfig.redirectUri as string);
+    const clientId = authCodeFlowConfig.clientId;
+    const registerUrl =
+      `${authCodeFlowConfig.issuer}/protocol/openid-connect/registrations` +
+      `?client_id=${clientId}&response_type=code&scope=openid+profile+email&redirect_uri=${redirectUri}`;
+    window.location.href = registerUrl;
   }
 
   public logout() {

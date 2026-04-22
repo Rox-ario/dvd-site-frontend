@@ -1,7 +1,7 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {Router, RouterModule} from '@angular/router';
+import { RouterModule } from '@angular/router';
 import {
   Observable, debounceTime, distinctUntilChanged, startWith, switchMap, catchError, of, shareReplay,
   combineLatest, map
@@ -51,8 +51,7 @@ export class CatalogoComponent implements OnInit {
     private clienteService: ClienteService, // Iniettato
     private authService: AuthService,        // Iniettato
     private catalogoService: AdminCatalogoService,
-    private cdr: ChangeDetectorRef,
-    private router: Router
+    private cdr: ChangeDetectorRef
   ) {
     // Definizione di tutti i criteri di ricerca
     this.filterForm = this.fb.group({
@@ -153,8 +152,8 @@ export class CatalogoComponent implements OnInit {
     event.stopPropagation();
 
     if (!this.isLoggedIn) {
-      // Naviga subito, ma invia un segnale alla pagina di login
-      this.router.navigate(['/auth/login'], { queryParams: { avviso: 'carrello' } });
+      // L'utente non è loggato: lo mandiamo a Keycloak
+      this.authService.login();
       return;
     }
 

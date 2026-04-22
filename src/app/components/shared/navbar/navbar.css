@@ -84,6 +84,22 @@
   color: white;
 }
 
+.btn-secondary-outline {
+  border: 2px solid #6b7280;
+  color: #6b7280;
+  background: transparent;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary-outline:hover {
+  background: #6b7280;
+  color: white;
+}
+
 .btn-text {
   background: none;
   border: none;

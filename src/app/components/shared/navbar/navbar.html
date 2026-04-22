@@ -15,6 +15,7 @@
 
     <div class="auth-section">
       <ng-container *ngIf="!isLoggedIn">
+        <button (click)="register()" class="btn-secondary-outline">Registrati</button>
         <button (click)="login()" class="btn-primary-outline">Accedi</button>
       </ng-container>
 

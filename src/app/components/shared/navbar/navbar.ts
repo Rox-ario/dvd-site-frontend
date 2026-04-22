@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Observable, map } from 'rxjs';
+import { OAuthService } from 'angular-oauth2-oidc';
 import { AuthService } from '../../../services/auth';
 import { CartService } from '../../../services/cart';
 
@@ -17,13 +18,22 @@ export class NavbarComponent implements OnInit {
 
   constructor(
     public authService: AuthService,
-    private cartService: CartService
+    private cartService: CartService,
+    private oauthService: OAuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.cartItemCount$ = this.cartService.cartItems$.pipe(
       map(items => items.reduce((acc, item) => acc + item.quantita, 0))
     );
+
+    // L'OAuthService lavora fuori dalla zone di Angular.
+    // Ci iscriviamo ai suoi eventi per forzare il ricalcolo della vista
+    // non appena lo stato di autenticazione cambia (es. dopo il redirect da Keycloak).
+    this.oauthService.events.subscribe(() => {
+      this.cdr.detectChanges();
+    });
   }
 
   // Getter reattivi basati sul nuovo AuthService
@@ -32,7 +42,11 @@ export class NavbarComponent implements OnInit {
   get isCliente(): boolean { return this.isLoggedIn && !this.isAdmin; }
 
   login(): void {
-    this.authService.login(); // Innesca Keycloak
+    this.authService.login();
+  }
+
+  register(): void {
+    this.authService.register();
   }
 
   logout(): void {
