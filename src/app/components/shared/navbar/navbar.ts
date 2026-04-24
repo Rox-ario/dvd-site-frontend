@@ -28,17 +28,21 @@ export class NavbarComponent implements OnInit {
       map(items => items.reduce((acc, item) => acc + item.quantita, 0))
     );
 
-    // L'OAuthService lavora fuori dalla zone di Angular.
-    // Ci iscriviamo ai suoi eventi per forzare il ricalcolo della vista
-    // non appena lo stato di autenticazione cambia (es. dopo il redirect da Keycloak).
+    // Trigger re-render whenever OAuth emits any event (token received, etc.)
     this.oauthService.events.subscribe(() => {
+      this.cdr.detectChanges();
+    });
+
+    // Trigger re-render when the full auth initialization is complete.
+    // This covers the case where configure() resolves after the navbar is mounted.
+    this.authService.isDoneLoading$.subscribe(() => {
       this.cdr.detectChanges();
     });
   }
 
   // Getter reattivi basati sul nuovo AuthService
   get isLoggedIn(): boolean { return this.authService.isLoggedIn(); }
-  get isAdmin(): boolean { return this.authService.isAdmin(); }
+  get isAdmin(): boolean { return this.authService.isAdmin; }
   get isCliente(): boolean { return this.isLoggedIn && !this.isAdmin; }
 
   login(): void {

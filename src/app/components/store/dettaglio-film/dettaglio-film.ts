@@ -46,7 +46,7 @@ export class DettaglioFilmComponent implements OnInit {
   filmSimili: FilmResponse[] = [];
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
-    this.isAdmin = this.authService.isAdmin();
+    this.isAdmin = this.authService.isAdmin;
     this.currentUserEmail = this.authService.getEmail();
 
 

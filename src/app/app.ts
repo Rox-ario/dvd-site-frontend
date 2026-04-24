@@ -25,18 +25,10 @@ export class App implements OnInit {
     private oauthService: OAuthService,
     private clienteService: ClienteService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
-    // 1. Ascoltiamo gli eventi di redirect completati da Keycloak
-    this.oauthService.events.subscribe(event => {
-      if (event.type === 'token_received') {
-        this.eseguiSincronizzazioneJIT();
-      }
-    });
-
-    // 2. Copertura per i refresh di pagina (se l'utente ha già il token valido in sessione)
-    this.authService.isDoneLoading$.subscribe(isDone => {
+    this.authService.isDoneLoading$.subscribe((isDone: boolean) => {
       if (isDone && this.authService.isLoggedIn()) {
         this.eseguiSincronizzazioneJIT();
       }

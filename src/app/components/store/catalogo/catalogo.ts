@@ -66,7 +66,7 @@ export class CatalogoComponent implements OnInit {
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
-    this.isAdmin = this.authService.isAdmin();
+    this.isAdmin = this.authService.isAdmin;
 
     if (this.isLoggedIn) {
       // Usa il metodo leggero al posto di ottieniDettaglioPreferiti()

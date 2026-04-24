@@ -34,4 +34,8 @@ export class ClienteService {
   ottieniIdPreferiti(): Observable<number[]> {
     return this.http.get<number[]>(`${this.API_URL}/preferiti/ids`);
   }
+
+  sincronizzaClienteDaToken(): Observable<any> {
+    return this.http.get(this.API_URL);
+  }
 }

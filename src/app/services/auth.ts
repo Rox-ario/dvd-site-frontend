@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
 import { AuthConfig, OAuthService } from 'angular-oauth2-oidc';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { Ruolo } from '../models/auth.model';
+import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { Router } from '@angular/router';
 
 export const authCodeFlowConfig: AuthConfig = {
-  // SOSTITUISCI CON L'URL DEL TUO KEYCLOAK (es: http://localhost:8080 non è corretto se è il backend, Keycloak di solito è su un'altra porta come 8081 o 9090)
   issuer: 'http://localhost:8081/realms/dvd-ecommerce',
   redirectUri: window.location.origin,
-  clientId: 'frontend-angular', // Nome del client configurato su Keycloak
+  clientId: 'frontend-angular',
   responseType: 'code',
   scope: 'openid profile email',
   showDebugInformation: false,
+  requireHttps: false,
+  strictDiscoveryDocumentValidation: false // Mettiamo al sicuro da altre pignolerie di localhost
 };
 
 @Injectable({
@@ -20,41 +21,46 @@ export class AuthService {
   private isDoneLoadingSubject = new BehaviorSubject<boolean>(false);
   public isDoneLoading$ = this.isDoneLoadingSubject.asObservable();
 
-  constructor(private oauthService: OAuthService) {
-    this.configure();
+  private isReady$ = new ReplaySubject<boolean>(1);
+
+  constructor(private oauthService: OAuthService, private router: Router) {
+    // Avevi ragione tu nella tua primissima versione. Niente configure() qui.
+    // L'istanza oauthService riceve le impostazioni automaticamente grazie alla DI in app.config.ts
   }
 
-  private configure() {
-    this.oauthService.configure(authCodeFlowConfig);
+  public async initializeKeycloak(): Promise<boolean> {
     this.oauthService.setupAutomaticSilentRefresh();
 
-    // Inizializza il login e controlla se stiamo tornando da un redirect di Keycloak
-    this.oauthService.loadDiscoveryDocumentAndTryLogin()
-      .then(() => {
-        this.isDoneLoadingSubject.next(true);
-      })
-      .catch((err) => {
-        console.warn('Impossibile raggiungere Keycloak durante il boot:', err);
-        this.isDoneLoadingSubject.next(false);
-      });
+    try {
+      await this.oauthService.loadDiscoveryDocumentAndTryLogin();
+
+      if (this.oauthService.hasValidAccessToken() && this.oauthService.state) {
+        const targetUrl = decodeURIComponent(this.oauthService.state);
+        this.router.navigateByUrl(targetUrl);
+      }
+
+      this.isDoneLoadingSubject.next(true); // Questo ora sbloccherà il tuo app.ts!
+      this.isReady$.next(true);
+      return true;
+    } catch (err) {
+      console.warn('Errore durante la connessione a Keycloak:', err);
+      this.isDoneLoadingSubject.next(false);
+      this.isReady$.next(false);
+      return false;
+    }
   }
 
   public login(targetUrl?: string) {
-    // Salviamo la rotta a cui l'utente voleva accedere prima del login.
-    // Usiamo loadDiscoveryDocumentAndLogin() invece di initCodeFlow() così
-    // funziona anche se il discovery document non era stato caricato al boot.
-    // prompt: 'login' forza Keycloak a mostrare sempre la schermata di login
-    // anche se esiste già una sessione SSO attiva (evita l'auto-login dopo logout).
-    this.oauthService.customQueryParams = { prompt: 'login' };
     this.oauthService.loadDiscoveryDocumentAndLogin({ state: targetUrl || '/profilo' })
       .catch((err) => {
-        console.error('Errore durante il login con Keycloak:', err);
-        alert('Impossibile connettersi al server di autenticazione. Assicurati che Keycloak sia attivo su http://localhost:8081');
+        console.error('Dettaglio errore Keycloak:', err);
+        // Poiché in JS gli errori lanciati possono non avere uno .status, gestiamo il fallback generico
+        const status = err?.status !== undefined ? err.status : 'Sconosciuto';
+        alert(`Errore ${status}: Impossibile connettersi al server di autenticazione. Controlla la console.`);
       });
   }
 
   public register(): void {
-    // Costruisce l'URL diretto alla pagina di registrazione di Keycloak
     const redirectUri = encodeURIComponent(authCodeFlowConfig.redirectUri as string);
     const clientId = authCodeFlowConfig.clientId;
     const registerUrl =
@@ -85,21 +91,29 @@ export class AuthService {
     if (!token) return [];
 
     try {
-      // Estraiamo il payload dal JWT (Base64)
       const payload = JSON.parse(window.atob(token.split('.')[1]));
-      // Keycloak mappa i ruoli dentro realm_access.roles
       return payload.realm_access?.roles || [];
     } catch (e) {
       return [];
     }
   }
 
-  public isAdmin(): boolean {
-    return this.getRuoli().includes('ROLE_ADMIN');
+  public getAccountUrl(): string {
+    return `${this.oauthService.issuer}/account`;
   }
 
-  public getAccountUrl(): string {
-    const issuer = this.oauthService.issuer;
-    return `${issuer}/account`;
+  get ready$() {
+    return this.isReady$.asObservable();
+  }
+
+  get roles(): string[] {
+    const claims: any = this.oauthService.getIdentityClaims();
+    if (!claims || !claims.realm_access) return [];
+    return claims.realm_access.roles || [];
+  }
+
+  get isAdmin(): boolean {
+    const ruoli = this.getRuoli();
+    return ruoli.includes('ADMIN') || ruoli.includes('ROLE_ADMIN');
   }
 }
