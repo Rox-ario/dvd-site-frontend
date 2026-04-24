@@ -66,6 +66,12 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
           this.activeTab = this.isAdmin ? 'pannello' : 'preferiti';
 
           this.caricaProfilo();
+
+          // Carica gli ordini per l'admin
+          if (this.isAdmin) {
+            this.caricaOrdiniAdmin();
+          }
+
           this.cdr.detectChanges();
         }
       });
@@ -178,4 +184,84 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
     const accountUrl = this.authService.getAccountUrl();
     window.open(accountUrl, '_blank');
   }
-}
+
+  // ========== METODI PER L'ADMIN ==========
+
+  private caricaOrdiniAdmin() {
+    this.isLoadingAdmin = true;
+    this.ordineService.ottieniTuttiGliOrdini()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (ordini) => {
+          this.ordini = Array.isArray(ordini) ? ordini : [];
+          this.isLoadingAdmin = false;
+          this.applicaFiltro();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.errorMessage = 'Errore nel caricamento degli ordini.';
+          this.isLoadingAdmin = false;
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  applicaFiltro() {
+    let filtrati = [...this.ordini];
+
+    // Filtra per stato
+    if (this.statoSelezionato) {
+      filtrati = filtrati.filter(o => o.stato === this.statoSelezionato);
+    }
+
+    // Ordina per data
+    filtrati.sort((a, b) => {
+      const dataA = new Date(a.dataAcquisto).getTime();
+      const dataB = new Date(b.dataAcquisto).getTime();
+      return this.ordinamentoData === 'DESC' ? dataB - dataA : dataA - dataB;
+    });
+
+    this.ordiniFiltrati = filtrati;
+    this.cdr.detectChanges();
+  }
+
+  cambiaStato(ordine: OrdineResponse, event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const nuovoStato = select.value;
+
+    this.ordineService.aggiornaStatoOrdine(ordine.idOrdine, nuovoStato)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (ordineAggiornato) => {
+          const index = this.ordini.findIndex(o => o.idOrdine === ordine.idOrdine);
+          if (index !== -1) {
+            this.ordini[index] = ordineAggiornato;
+          }
+          this.applicaFiltro();
+          this.notificationService.success('Stato ordine aggiornato');
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.notificationService.error('Errore nell\'aggiornamento dello stato');
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  get ordiniFiltrati(): OrdineResponse[] {
+    return this._ordiniFiltrati;
+  }
+
+  set ordiniFiltrati(value: OrdineResponse[]) {
+    this._ordiniFiltrati = value;
+  }
+
+  private _ordiniFiltrati: OrdineResponse[] = [];
+
+  get totaleIncassato(): number {
+    return this.ordini.reduce((sum, ordine) => sum + ordine.totale, 0);
+  }
+
+  get ordiniDaSpedire(): number {
+    return this.ordini.filter(o => o.stato === 'IN_ELABORAZIONE').length;
+  }

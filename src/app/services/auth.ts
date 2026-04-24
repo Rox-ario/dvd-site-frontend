@@ -11,7 +11,7 @@ export const authCodeFlowConfig: AuthConfig = {
   scope: 'openid profile email',
   showDebugInformation: false,
   requireHttps: false,
-  strictDiscoveryDocumentValidation: false // Mettiamo al sicuro da altre pignolerie di localhost
+  strictDiscoveryDocumentValidation: false
 };
 
 @Injectable({
@@ -23,12 +23,18 @@ export class AuthService {
 
   private isReady$ = new ReplaySubject<boolean>(1);
 
-  constructor(private oauthService: OAuthService, private router: Router) {
-    // Avevi ragione tu nella tua primissima versione. Niente configure() qui.
-    // L'istanza oauthService riceve le impostazioni automaticamente grazie alla DI in app.config.ts
+  constructor(private oauthService: OAuthService, private router: Router) {}
+
+  // Metodo helper privato per forzare la configurazione a martellate
+  private forzaConfigurazioneBase() {
+    this.oauthService.configure(authCodeFlowConfig);
+    // FORZATURA DIRETTA SULL'ISTANZA: Questo è innegabile per la libreria
+    this.oauthService.requireHttps = false;
+    this.oauthService.issuer = 'http://localhost:8081/realms/dvd-ecommerce';
   }
 
   public async initializeKeycloak(): Promise<boolean> {
+    this.forzaConfigurazioneBase();
     this.oauthService.setupAutomaticSilentRefresh();
 
     try {
@@ -39,11 +45,11 @@ export class AuthService {
         this.router.navigateByUrl(targetUrl);
       }
 
-      this.isDoneLoadingSubject.next(true); // Questo ora sbloccherà il tuo app.ts!
+      this.isDoneLoadingSubject.next(true);
       this.isReady$.next(true);
       return true;
     } catch (err) {
-      console.warn('Errore durante la connessione a Keycloak:', err);
+      console.warn('Errore critico in initializeKeycloak:', err);
       this.isDoneLoadingSubject.next(false);
       this.isReady$.next(false);
       return false;
@@ -51,10 +57,11 @@ export class AuthService {
   }
 
   public login(targetUrl?: string) {
+    this.forzaConfigurazioneBase(); // Assicuriamoci che non se lo dimentichi prima del click
+
     this.oauthService.loadDiscoveryDocumentAndLogin({ state: targetUrl || '/profilo' })
       .catch((err) => {
         console.error('Dettaglio errore Keycloak:', err);
-        // Poiché in JS gli errori lanciati possono non avere uno .status, gestiamo il fallback generico
         const status = err?.status !== undefined ? err.status : 'Sconosciuto';
         alert(`Errore ${status}: Impossibile connettersi al server di autenticazione. Controlla la console.`);
       });
@@ -81,15 +88,9 @@ export class AuthService {
     return this.oauthService.getAccessToken();
   }
 
-  public getEmail(): string | null {
-    const claims = this.oauthService.getIdentityClaims() as any;
-    return claims ? claims['email'] : null;
-  }
-
   public getRuoli(): string[] {
     const token = this.getToken();
     if (!token) return [];
-
     try {
       const payload = JSON.parse(window.atob(token.split('.')[1]));
       return payload.realm_access?.roles || [];
@@ -98,22 +99,27 @@ export class AuthService {
     }
   }
 
-  public getAccountUrl(): string {
-    return `${this.oauthService.issuer}/account`;
+  public getEmail(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(window.atob(token.split('.')[1]));
+      return payload.email || null;
+    } catch (e) {
+      return null;
+    }
   }
 
   get ready$() {
     return this.isReady$.asObservable();
   }
 
-  get roles(): string[] {
-    const claims: any = this.oauthService.getIdentityClaims();
-    if (!claims || !claims.realm_access) return [];
-    return claims.realm_access.roles || [];
-  }
-
   get isAdmin(): boolean {
     const ruoli = this.getRuoli();
     return ruoli.includes('ADMIN') || ruoli.includes('ROLE_ADMIN');
+  }
+
+  public getAccountUrl(): string {
+    return `${authCodeFlowConfig.issuer}/account`;
   }
 }
