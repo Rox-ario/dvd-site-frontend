@@ -265,3 +265,4 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
   get ordiniDaSpedire(): number {
     return this.ordini.filter(o => o.stato === 'IN_ELABORAZIONE').length;
   }
+}
