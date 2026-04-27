@@ -22,7 +22,7 @@ export class StoricoOrdiniComponent implements OnInit {
     private ordineService: OrdineService,
     private cdr: ChangeDetectorRef,
     private notificationService: NotificationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.caricaStorico();
@@ -30,8 +30,8 @@ export class StoricoOrdiniComponent implements OnInit {
 
   caricaStorico() {
     this.ordineService.ottieniMioStorico().subscribe({
-      next: (dati) => {
-        this.ordini = dati;
+      next: (page) => {
+        this.ordini = page.content;
         this.isLoading = false;
         this.cdr.detectChanges();
       },

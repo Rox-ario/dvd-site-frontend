@@ -1,18 +1,20 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
   Observable, debounceTime, distinctUntilChanged, startWith, switchMap, catchError, of, shareReplay,
-  combineLatest, map
+  combineLatest, map,
+  BehaviorSubject
 } from 'rxjs';
 import { FilmService } from '../../../services/film';
 import { CartService } from '../../../services/cart';
 import { ClienteService } from '../../../services/cliente'; // Aggiunto per i preferiti
 import { AuthService } from '../../../services/auth';       // Aggiunto per verificare se è loggato
 import { FilmResponse } from '../../../models/film.model';
-import {Attore, Genere, Regista} from '../../../models/catalogo.model';
-import {AdminCatalogoService} from '../../../services/admin-catalogo.service';
+import { Attore, Genere, Regista } from '../../../models/catalogo.model';
+import { AdminCatalogoService } from '../../../services/admin-catalogo.service';
+import { Page } from '../../../models/pagination.model';
 
 @Component({
   selector: 'app-catalogo',
@@ -24,7 +26,7 @@ import {AdminCatalogoService} from '../../../services/admin-catalogo.service';
 export class CatalogoComponent implements OnInit {
   filterForm: FormGroup;
   searchControl = new FormControl('');
-  film$!: Observable<FilmResponse[]>;
+  filmList: FilmResponse[] = [];
   errorMessage = '';
   isAdmin = false;
   mostraFiltriAvanzati = false;
@@ -43,6 +45,10 @@ export class CatalogoComponent implements OnInit {
   // Nuove variabili per la gestione dei preferiti
   preferitiIds = new Set<number>();
   isLoggedIn = false;
+
+  currentPage$ = new BehaviorSubject<number>(0);
+  hasMore = false;
+  isLoading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -88,7 +94,6 @@ export class CatalogoComponent implements OnInit {
     ]).pipe(
       map(([items, search]) => {
         const term = (search || '').toLowerCase();
-        // Filtra per nome e mostra massimo 12 pillole
         return items.filter(i => i.nome.toLowerCase().includes(term)).slice(0, 12);
       })
     );
@@ -113,26 +118,54 @@ export class CatalogoComponent implements OnInit {
       })
     );
 
-    // 2. Logica di ricerca reattiva del catalogo
-    this.film$ = this.filterForm.valueChanges.pipe(
-      startWith(this.filterForm.value),
+    this.filterForm.valueChanges.pipe(
       debounceTime(400),
-      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
-      switchMap(filtri => {
+      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
+    ).subscribe(() => {
+      this.currentPage$.next(0); // Fa ripartire la ricerca da pagina 0
+    });
+
+    // 2. Pipeline principale
+    combineLatest([
+      this.filterForm.valueChanges.pipe(startWith(this.filterForm.value)),
+      this.currentPage$
+    ]).pipe(
+      debounceTime(50), // Evita doppie chiamate se form e pagina cambiano insieme
+      switchMap(([filtri, page]) => {
+        this.isLoading = true;
         this.errorMessage = '';
-        // Rimuoviamo le stringhe vuote o null per non inviare query param inutili
         const filtriPuliti = Object.fromEntries(
           Object.entries(filtri).filter(([_, v]) => v !== null && v !== '')
         );
 
-        return this.filmService.esploraCatalogo(filtriPuliti).pipe(
+        return this.filmService.esploraCatalogo(filtriPuliti, page, 12).pipe(
           catchError(() => {
             this.errorMessage = 'Impossibile caricare il catalogo in questo momento.';
-            return of([]);
+            return of(null);
           })
         );
       })
-    );
+    ).subscribe((pageData: Page<FilmResponse> | null) => {
+      this.isLoading = false;
+      if (!pageData) return;
+
+      if (pageData.number === 0) {
+        // Se è la prima pagina (o filtri cambiati), sovrascrivi l'array
+        this.filmList = pageData.content;
+      } else {
+        // Se è una pagina successiva, accoda i risultati
+        this.filmList = [...this.filmList, ...pageData.content];
+      }
+
+      this.hasMore = !pageData.last; // Se non è l'ultima pagina, c'è ancora da caricare
+      this.cdr.detectChanges();
+    });
+  }
+
+  caricaAltri(): void {
+    if (this.hasMore && !this.isLoading) {
+      this.currentPage$.next(this.currentPage$.value + 1);
+    }
   }
 
   toggleFiltri() {

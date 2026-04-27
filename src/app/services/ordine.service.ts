@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CreaOrdineRequest } from '../models/auth.model';
 import { OrdineResponse } from '../models/ordine.model';
+import { Page } from '../models/pagination.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,23 +11,22 @@ import { OrdineResponse } from '../models/ordine.model';
 export class OrdineService {
   private readonly API_URL = 'http://localhost:8080/api/ordini';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   inviaOrdine(richiesta: CreaOrdineRequest): Observable<any> {
     return this.http.post(this.API_URL, richiesta);
   }
 
-  ottieniMioStorico(): Observable<OrdineResponse[]> {
-    return this.http.get<OrdineResponse[]>(`${this.API_URL}/me/storico`);
+  ottieniMioStorico(): Observable<Page<OrdineResponse>> {
+    return this.http.get<Page<OrdineResponse>>(`${this.API_URL}/me/storico`);
   }
 
-  ottieniTuttiGliOrdini(stato?: string): Observable<OrdineResponse[]> {
+  ottieniTuttiGliOrdini(stato?: string): Observable<Page<OrdineResponse>> {
     let params = new HttpParams();
     if (stato) {
       params = params.set('stato', stato);
     }
-    // Chiama l'endpoint globale protetto
-    return this.http.get<OrdineResponse[]>(`${this.API_URL}/admin/tutti`, { params });
+    return this.http.get<Page<OrdineResponse>>(`${this.API_URL}/admin/tutti`, { params });
   }
 
   aggiornaStatoOrdine(idOrdine: number, nuovoStato: string): Observable<OrdineResponse> {

@@ -12,24 +12,17 @@
   </div>
 
   <div class="filters-bar">
-    <input
-      type="text"
-      class="search-input"
-      placeholder="Cerca per titolo..."
-      [(ngModel)]="testoRicerca"
-      (keyup)="caricaFilm()"
-    >
-    <select class="filter-select" [(ngModel)]="genereSelezionato" (change)="caricaFilm()">
+    <input type="text" class="search-input" placeholder="Cerca per titolo..." [(ngModel)]="testoRicerca"
+      (input)="onRicercaModificata()">
+    <select class="filter-select" [(ngModel)]="genereSelezionato" (change)="onRicercaModificata()">
       <option value="">Tutti i generi</option>
       <option *ngFor="let g of generi" [value]="g.nome">{{ g.nome }}</option>
     </select>
   </div>
 
-
   <div *ngIf="isLoading" class="global-loader">
     <div class="loading-infinite">Sincronizzazione catalogo in corso...</div>
   </div>
-
 
   <div *ngIf="!mostraForm && !isLoading" class="film-list-container">
 
@@ -38,7 +31,6 @@
     </div>
 
     <div *ngFor="let f of filmList" class="film-item-row">
-
       <div class="film-cover-area">
         <span>📀</span>
       </div>
@@ -46,7 +38,7 @@
       <div class="film-info-main">
         <span class="film-title-display">{{ f.titolo }}</span>
         <p class="film-meta-subtitle">
-          {{ f.registi[0] || 'Regista Sconosciuto' }} • {{ f.anno }}
+          {{ f.registi && f.registi.length > 0 ? f.registi[0] : 'Regista Sconosciuto' }} • {{ f.anno }}
         </p>
       </div>
 
@@ -75,6 +67,23 @@
         </button>
       </div>
     </div>
+
+    <div class="pagination-footer" *ngIf="totalePagine > 1"
+      style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #fff; border-radius: 8px; margin-top: 1rem;">
+      <button (click)="cambiaPagina(paginaCorrente - 1)" [disabled]="paginaCorrente === 0"
+        class="btn-modern btn-secondary">
+        &laquo; Precedente
+      </button>
+      <div style="font-size: 0.9rem; color: #4b5563;">
+        Pagina <strong>{{ paginaCorrente + 1 }}</strong> di {{ totalePagine }} <span style="color: #9ca3af;">({{
+          totaleElementi }} DVD totali)</span>
+      </div>
+      <button (click)="cambiaPagina(paginaCorrente + 1)" [disabled]="paginaCorrente >= totalePagine - 1"
+        class="btn-modern btn-secondary">
+        Successiva &raquo;
+      </button>
+    </div>
+
   </div>
 
 
@@ -127,25 +136,21 @@
         <h4 style="margin-top: 0; margin-bottom: 0.5rem; color: #1e3a8a;">
           Aggiungi nuovo {{ creazioneRapida.tipo }}
         </h4>
-
         <div style="display: flex; gap: 3rem; align-items: flex-end;">
           <div style="flex: 1;">
             <label style="font-size: 0.85rem;">Nome</label>
-            <input type="text" class="form-input" [(ngModel)]="creazioneRapida.nome" [ngModelOptions]="{standalone: true}">
+            <input type="text" class="form-input" [(ngModel)]="creazioneRapida.nome"
+              [ngModelOptions]="{standalone: true}">
           </div>
-
           <div style="flex: 1;" *ngIf="creazioneRapida.tipo !== 'genere'">
             <label style="font-size: 1.0rem;">Cognome</label>
-            <input type="text" class="form-input" [(ngModel)]="creazioneRapida.cognome" [ngModelOptions]="{standalone: true}">
+            <input type="text" class="form-input" [(ngModel)]="creazioneRapida.cognome"
+              [ngModelOptions]="{standalone: true}">
           </div>
-
           <div style="display: flex; gap: 0.5rem;">
-            <button type="button" class="btn-modern btn-primary" (click)="salvaEntitaRapida()" [disabled]="!creazioneRapida.nome.trim()">
-              Salva
-            </button>
-            <button type="button" class="btn-modern btn-secondary" (click)="annullaCreazioneRapida()">
-              Annulla
-            </button>
+            <button type="button" class="btn-modern btn-primary" (click)="salvaEntitaRapida()"
+              [disabled]="!creazioneRapida.nome.trim()">Salva</button>
+            <button type="button" class="btn-modern btn-secondary" (click)="annullaCreazioneRapida()">Annulla</button>
           </div>
         </div>
       </div>
@@ -153,74 +158,104 @@
       <div class="form-group">
         <div class="label-with-action">
           <label>Generi</label>
-          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('genere')" title="Crea">+ Nuovo</button>
+          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('genere')">+ Nuovo</button>
         </div>
 
-        <input type="text" class="local-search-input" placeholder="Cerca genere..." [(ngModel)]="ricercaGenereTerm" [ngModelOptions]="{standalone: true}">
+        <div class="chips-container">
+          <span class="chip chip-genre" *ngFor="let gen of generiSelezionati">
+            <span class="chip-icon">🎭</span>
+            {{ gen.nome }}
+            <button type="button" class="chip-remove" (click)="rimuoviGenere(gen.id)" title="Rimuovi">×</button>
+          </span>
+          <span *ngIf="generiSelezionati.length === 0" class="chips-empty">Nessun genere selezionato</span>
+        </div>
 
-        <div class="custom-multi-select-list">
-          <div class="list-item" *ngFor="let g of generiFiltrati" (click)="toggleSelection('idGeneri', g.id)">
-            <div class="item-content">
-              <input type="checkbox" [checked]="isItemSelected('idGeneri', g.id)" (click)="$event.stopPropagation(); toggleSelection('idGeneri', g.id)">
-              <span>{{ g.nome }}</span>
-            </div>
-            <button type="button" class="btn-delete-item" (click)="eliminaGenere(g.id, g.nome, $event)">&times;</button>
-          </div>
+        <div class="typeahead-wrapper" style="z-index: 30;">
+          <input type="text" class="form-input typeahead-input" [formControl]="searchGenereCtrl"
+            placeholder="🔍 Cerca genere...">
+          <ng-container *ngIf="(generiRisultati$ | async) as risultati">
+            <ul class="typeahead-dropdown" *ngIf="risultati.length > 0">
+              <li class="typeahead-item" *ngFor="let res of risultati" (click)="aggiungiGenere(res)">
+                <span class="typeahead-item-icon">🎭</span> {{ res.nome }}
+              </li>
+            </ul>
+          </ng-container>
         </div>
       </div>
 
       <div class="form-group">
         <div class="label-with-action">
           <label>Registi</label>
-          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('regista')" title="Crea">+ Nuovo</button>
+          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('regista')">+ Nuovo</button>
         </div>
 
-        <input type="text" class="local-search-input" placeholder="Cerca regista..." [(ngModel)]="ricercaRegistaTerm" [ngModelOptions]="{standalone: true}">
+        <div class="chips-container">
+          <span class="chip chip-director" *ngFor="let reg of registiSelezionati">
+            <span class="chip-icon">🎬</span>
+            {{ reg.nome }} {{ reg.cognome }}
+            <button type="button" class="chip-remove" (click)="rimuoviRegista(reg.id)" title="Rimuovi">×</button>
+          </span>
+          <span *ngIf="registiSelezionati.length === 0" class="chips-empty">Nessun regista selezionato</span>
+        </div>
 
-        <div class="custom-multi-select-list">
-          <div class="list-item" *ngFor="let r of registiFiltrati" (click)="toggleSelection('idRegisti', r.id)">
-            <div class="item-content">
-              <input type="checkbox" [checked]="isItemSelected('idRegisti', r.id)" (click)="$event.stopPropagation(); toggleSelection('idRegisti', r.id)">
-              <span>{{ r.nome }} {{ r.cognome }}</span>
-            </div>
-            <button type="button" class="btn-delete-item" (click)="eliminaRegista(r.id, r.nome, r.cognome, $event)">&times;</button>
-          </div>
+        <div class="typeahead-wrapper" style="z-index: 20;">
+          <input type="text" class="form-input typeahead-input" [formControl]="searchRegistaCtrl"
+            placeholder="🔍 Cerca regista...">
+          <ng-container *ngIf="(registiRisultati$ | async) as risultati">
+            <ul class="typeahead-dropdown" *ngIf="risultati.length > 0">
+              <li class="typeahead-item" *ngFor="let res of risultati" (click)="aggiungiRegista(res)">
+                <span class="typeahead-item-icon">🎬</span> {{ res.nome }} {{ res.cognome }}
+              </li>
+            </ul>
+          </ng-container>
         </div>
       </div>
 
       <div class="form-group span-2">
         <div class="label-with-action">
           <label>Attori</label>
-          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('attore')" title="Crea">+ Nuovo</button>
+          <button type="button" class="btn-outline" (click)="avviaCreazioneRapida('attore')">+ Nuovo</button>
         </div>
 
-        <input type="text" class="local-search-input" placeholder="Cerca attore..." [(ngModel)]="ricercaAttoreTerm" [ngModelOptions]="{standalone: true}">
+        <div class="chips-container">
+          <span class="chip chip-actor" *ngFor="let att of attoriSelezionati">
+            <span class="chip-icon">🌟</span>
+            {{ att.nome }} {{ att.cognome }}
+            <button type="button" class="chip-remove" (click)="rimuoviAttore(att.id)" title="Rimuovi">×</button>
+          </span>
+          <span *ngIf="attoriSelezionati.length === 0" class="chips-empty">Nessun attore selezionato</span>
+        </div>
 
-        <div class="custom-multi-select-list">
-          <div class="list-item" *ngFor="let a of attoriFiltrati" (click)="toggleSelection('idAttori', a.id)">
-            <div class="item-content">
-              <input type="checkbox" [checked]="isItemSelected('idAttori', a.id)" (click)="$event.stopPropagation(); toggleSelection('idAttori', a.id)">
-              <span>{{ a.nome }} {{ a.cognome }}</span>
-            </div>
-            <button type="button" class="btn-delete-item" (click)="eliminaAttore(a.id, a.nome, a.cognome, $event)">&times;</button>
-          </div>
+        <div class="typeahead-wrapper" style="z-index: 10;">
+          <input type="text" class="form-input typeahead-input" [formControl]="searchAttoreCtrl"
+            placeholder="🔍 Cerca attore...">
+          <ng-container *ngIf="(attoriRisultati$ | async) as risultati">
+            <ul class="typeahead-dropdown" *ngIf="risultati.length > 0">
+              <li class="typeahead-item" *ngFor="let res of risultati" (click)="aggiungiAttore(res)">
+                <span class="typeahead-item-icon">🌟</span> {{ res.nome }} {{ res.cognome }}
+              </li>
+            </ul>
+          </ng-container>
         </div>
       </div>
+
 
       <div class="form-group span-2">
         <label>Curiosità</label>
         <div style="display: flex; gap: 3rem; margin-bottom: 0.5rem; align-items: flex-start;">
           <div style="flex-grow: 1;">
             <input type="text" [(ngModel)]="nuovaCuriositaTesto" [ngModelOptions]="{standalone: true}"
-                   class="form-input" placeholder="Inserisci qui la curiosità"
-                   [maxlength]="lunghezzaMassima" (keyup.enter)="aggiungiCuriosita(); $event.preventDefault()">
+              class="form-input" placeholder="Inserisci qui la curiosità" [maxlength]="lunghezzaMassima"
+              (keyup.enter)="aggiungiCuriosita(); $event.preventDefault()">
             <div style="text-align: right; margin-top: 0.3rem;">
-              <small [ngStyle]="{'color': nuovaCuriositaTesto.length === lunghezzaMassima ? '#ef4444' : '#9ca3af', 'font-size': '0.8rem'}">
+              <small
+                [ngStyle]="{'color': nuovaCuriositaTesto.length === lunghezzaMassima ? '#ef4444' : '#9ca3af', 'font-size': '0.8rem'}">
                 {{ nuovaCuriositaTesto.length }} / {{ lunghezzaMassima }}
               </small>
             </div>
           </div>
-          <button type="button" class="btn-modern btn-primary" (click)="aggiungiCuriosita()" [disabled]="!nuovaCuriositaTesto.trim()">
+          <button type="button" class="btn-modern btn-primary" (click)="aggiungiCuriosita()"
+            [disabled]="!nuovaCuriositaTesto.trim()">
             Aggiungi
           </button>
         </div>
@@ -230,7 +265,8 @@
             <div class="item-content">
               <span style="font-size: 0.95rem; color: #374151;">💡 {{ fact }}</span>
             </div>
-            <button type="button" class="btn-delete-item" (click)="rimuoviCuriosita(i)" title="Rimuovi curiosità">&times;</button>
+            <button type="button" class="btn-delete-item" (click)="rimuoviCuriosita(i)"
+              title="Rimuovi curiosità">&times;</button>
           </div>
         </div>
       </div>

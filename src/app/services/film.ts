@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {FilmResponse, Recensione} from '../models/film.model';
+import { FilmResponse, Recensione } from '../models/film.model';
 import { CreaFilmRequest } from '../models/film.model';
+import { Page } from '../models/pagination.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,11 +11,18 @@ import { CreaFilmRequest } from '../models/film.model';
 export class FilmService {
   private readonly API_URL = 'http://localhost:8080/api/film';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   //Utilizziamo un oggetto per i filtri, rispecchiando i @RequestParam del backend
-  esploraCatalogo(filtri?: { titolo?: string; nomeGenere?: string; nomeAttore?: string; nomeRegista?: string; anno?: number; prezzoMax?: number }): Observable<FilmResponse[]> {
-    let params = new HttpParams();
+  esploraCatalogo(
+    filtri?: { titolo?: string; nomeGenere?: string; nomeAttore?: string; nomeRegista?: string; anno?: number; prezzoMax?: number },
+    page: number = 0,
+    size: number = 10
+  ): Observable<Page<FilmResponse>> {
+
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
 
     if (filtri) {
       if (filtri.titolo) params = params.set('titolo', filtri.titolo);
@@ -25,7 +33,8 @@ export class FilmService {
       if (filtri.prezzoMax) params = params.set('prezzoMax', filtri.prezzoMax.toString());
     }
 
-    return this.http.get<FilmResponse[]>(this.API_URL, { params });
+    // Assicurati che restituisca Page<FilmResponse>
+    return this.http.get<Page<FilmResponse>>(this.API_URL, { params });
   }
 
   ottieniDettaglio(id: number): Observable<FilmResponse> {

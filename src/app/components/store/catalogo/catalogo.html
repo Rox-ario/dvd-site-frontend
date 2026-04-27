@@ -75,15 +75,15 @@
 
   <div class="alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
 
-  <ng-template #loadingTemplate>
+  <ng-container *ngIf="isLoading && filmList.length === 0">
     <div class="loader-container">
       <div class="spinner"></div>
       <p>Allestimento degli scaffali in corso...</p>
     </div>
-  </ng-template>
+  </ng-container>
 
-  <main class="grid-container" *ngIf="film$ | async as filmList; else loadingTemplate">
-    <div class="empty-state" *ngIf="filmList.length === 0 && !errorMessage">
+  <main class="grid-container" *ngIf="!isLoading || filmList.length > 0">
+    <div class="empty-state" *ngIf="filmList.length === 0 && !errorMessage && !isLoading">
       <p>Nessun film trovato. Prova ad allargare i tuoi orizzonti cinematografici.</p>
     </div>
 

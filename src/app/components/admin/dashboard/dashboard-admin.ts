@@ -1,10 +1,11 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrdineService } from '../../../services/ordine.service';
 import { NotificationService } from '../../../services/notification.service';
 import { OrdineResponse } from '../../../models/ordine.model';
-import {RouterLink} from '@angular/router';
+import { Page } from '../../../models/pagination.model';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard-admin',
@@ -30,7 +31,7 @@ export class DashboardAdminComponent implements OnInit {
     private ordineService: OrdineService,
     private notificationService: NotificationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.caricaOrdini();
@@ -39,14 +40,14 @@ export class DashboardAdminComponent implements OnInit {
   caricaOrdini() {
     this.isLoading = true;
     this.ordineService.ottieniTuttiGliOrdini().subscribe({
-      next: (dati) => {
-        this.ordini = Array.isArray(dati) ? dati : [];
+      next: (page) => {
+        // Estrai .content dall'oggetto Page
+        this.ordini = Array.isArray(page.content) ? page.content : [];
         this.ordini.forEach(o => o.stato = o.stato || 'IN_ELABORAZIONE');
 
         this.applicaFiltro();
         this.calcolaStatistiche();
         this.isLoading = false;
-
         this.cdr.detectChanges();
       },
       error: () => {
