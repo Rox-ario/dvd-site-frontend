@@ -21,6 +21,8 @@ export class GestioneFilmComponent implements OnInit {
   // Dati dal server per la tabella
   filmList: FilmResponse[] = [];
   generi: Genere[] = []; // Utilizzato solo per la tendina dei filtri veloci
+  attoriCatalogo: Attore[] = [];
+  registiCatalogo: Regista[] = [];
 
   // Paginazione e Ricerca Tabella
   testoRicerca = '';
@@ -89,6 +91,10 @@ export class GestioneFilmComponent implements OnInit {
   ngOnInit(): void {
     // Ora il service ci garantisce un Array pulito, zero crash.
     this.adminCatalogoService.ottieniGeneri().subscribe(generi => this.generi = generi);
+
+    this.adminCatalogoService.ottieniAttori().subscribe(a => this.attoriCatalogo = a);
+    this.adminCatalogoService.ottieniRegisti().subscribe(r => this.registiCatalogo = r);
+
     this.caricaFilm();
     this.inizializzaTypeahead();
   }
@@ -225,27 +231,26 @@ export class GestioneFilmComponent implements OnInit {
   apriFormModifica(film: FilmResponse) {
     this.filmInModificaId = film.idFilm;
 
-    // MOCK DEGLI OGGETTI (PERICOLO LOGICO: senza ID reali il salvataggio ignorerà queste entità o fallirà)
+    // MATCH REALE: cerchiamo nel catalogo l'oggetto vero partendo dal nome
     this.generiSelezionati = film.genere
-      ? film.genere.map((nome, index) => ({ id: -(index + 1), nome }))
+      ? film.genere.map(nome => this.generi.find(g => g.nome.toLowerCase() === nome.toLowerCase())).filter((g): g is Genere => g !== undefined)
       : [];
 
     this.attoriSelezionati = film.attori
-      ? film.attori.map((nomeCompleto, index) => {
-        const parts = nomeCompleto.split(' ');
-        return { id: -(index + 1), nome: parts[0], cognome: parts.slice(1).join(' ') };
-      })
+      ? film.attori.map(nomeCompleto => {
+        return this.attoriCatalogo.find(a => `${a.nome} ${a.cognome}`.toLowerCase() === nomeCompleto.toLowerCase());
+      }).filter((a): a is Attore => a !== undefined)
       : [];
 
     this.registiSelezionati = film.registi
-      ? film.registi.map((nomeCompleto, index) => {
-        const parts = nomeCompleto.split(' ');
-        return { id: -(index + 1), nome: parts[0], cognome: parts.slice(1).join(' ') };
-      })
+      ? film.registi.map(nomeCompleto => {
+        return this.registiCatalogo.find(r => `${r.nome} ${r.cognome}`.toLowerCase() === nomeCompleto.toLowerCase());
+      }).filter((r): r is Regista => r !== undefined)
       : [];
 
     this.curiositaTemp = film.curiosita ? [...film.curiosita] : [];
 
+    // Ora passiamo gli ID corretti al form
     this.filmForm.patchValue({
       titolo: film.titolo,
       anno: film.anno,
@@ -255,9 +260,9 @@ export class GestioneFilmComponent implements OnInit {
       trama: film.trama,
       urlImmagine: film.urlImmagine,
       curiosita: this.curiositaTemp,
-      idGeneri: [], // Non possiamo passare ID negativi al form
-      idAttori: [],
-      idRegisti: []
+      idGeneri: this.generiSelezionati.map(g => g.id),
+      idAttori: this.attoriSelezionati.map(a => a.id),
+      idRegisti: this.registiSelezionati.map(r => r.id)
     });
 
     this.mostraForm = true;

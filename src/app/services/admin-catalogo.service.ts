@@ -29,16 +29,17 @@ export class AdminCatalogoService {
   }
 
   // CORRETTO: Estraiamo il .content per avere array reali e non bloccare Angular
+  // Aggiungi ?size=1000 per recuperare tutti gli elementi in un colpo solo
   ottieniGeneri(): Observable<Genere[]> {
-    return this.http.get<Page<Genere>>(`${this.API_BASE}/generi`).pipe(map(p => p.content));
+    return this.http.get<Page<Genere>>(`${this.API_BASE}/generi?size=1000`).pipe(map(p => p.content));
   }
 
   ottieniAttori(): Observable<Attore[]> {
-    return this.http.get<Page<Attore>>(`${this.API_BASE}/attori`).pipe(map(p => p.content));
+    return this.http.get<Page<Attore>>(`${this.API_BASE}/attori?size=1000`).pipe(map(p => p.content));
   }
 
   ottieniRegisti(): Observable<Regista[]> {
-    return this.http.get<Page<Regista>>(`${this.API_BASE}/registi`).pipe(map(p => p.content));
+    return this.http.get<Page<Regista>>(`${this.API_BASE}/registi?size=1000`).pipe(map(p => p.content));
   }
 
   // --- CRUD METODI MANTENUTI INALTERATI ---

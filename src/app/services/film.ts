@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { FilmResponse, Recensione } from '../models/film.model';
+import {FilmResponse, Recensione, RecensioneResponseDTO, StatisticheRecensioniDTO} from '../models/film.model';
 import { CreaFilmRequest } from '../models/film.model';
 import { Page } from '../models/pagination.model';
 
@@ -67,5 +67,16 @@ export class FilmService {
 
   eliminaRecensione(idRecensione: number): Observable<void> {
     return this.http.delete<void>(`http://localhost:8080/api/recensioni/${idRecensione}`);
+  }
+
+  ottieniRecensioniPaginate(idFilm: number, page: number = 0, size: number = 5): Observable<Page<RecensioneResponseDTO>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<RecensioneResponseDTO>>(`http://localhost:8080/api/recensioni/${idFilm}`, { params });
+  }
+
+  ottieniStatisticheRecensioni(idFilm: number): Observable<StatisticheRecensioniDTO> {
+    return this.http.get<StatisticheRecensioniDTO>(`http://localhost:8080/api/recensioni/film/${idFilm}/statistiche`);
   }
 }

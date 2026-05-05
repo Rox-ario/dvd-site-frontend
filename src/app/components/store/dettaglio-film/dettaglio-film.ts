@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FilmService } from '../../../services/film';
 import { CartService } from '../../../services/cart';
-import { FilmResponse } from '../../../models/film.model';
+import {FilmResponse, RecensioneResponseDTO, StatisticheRecensioniDTO} from '../../../models/film.model';
 import { ClienteService } from '../../../services/cliente';
 import { AuthService } from '../../../services/auth';
 import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../../services/notification.service';
+import {forkJoin} from 'rxjs';
 
 @Component({
   selector: 'app-dettaglio-film',
@@ -31,6 +32,10 @@ export class DettaglioFilmComponent implements OnInit {
   editCommento = '';
   filmEspansi: Set<number> = new Set<number>();
   mostraFormRecensione = false;
+  recensioni: RecensioneResponseDTO[] = [];
+  statistiche: StatisticheRecensioniDTO | null = null;
+  paginaCorrenteRecensioni = 0;
+  hasMoreRecensioni = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -78,9 +83,25 @@ export class DettaglioFilmComponent implements OnInit {
   }
 
   caricaDettaglio(id: number) {
-    this.filmService.ottieniDettaglio(id).subscribe({
-      next: (dati) => {
-        this.film = dati;
+    this.isLoading = true;
+
+    // Tre chiamate parallele e indipendenti
+    forkJoin({
+      dettaglio: this.filmService.ottieniDettaglio(id),
+      recensioniPage: this.filmService.ottieniRecensioniPaginate(id, 0, 5),
+      stats: this.filmService.ottieniStatisticheRecensioni(id)
+    }).subscribe({
+      next: (risultati) => {
+        this.film = risultati.dettaglio;
+
+        // Assegnazione dati paginazione
+        this.recensioni = risultati.recensioniPage.content;
+        this.hasMoreRecensioni = !risultati.recensioniPage.last;
+        this.paginaCorrenteRecensioni = 0;
+
+        // Assegnazione statistiche pure dal DB
+        this.statistiche = risultati.stats;
+
         this.isLoading = false;
         this.controllaSePreferito(id);
         this.cdr.detectChanges();
@@ -90,6 +111,48 @@ export class DettaglioFilmComponent implements OnInit {
         this.isLoading = false;
         this.cdr.detectChanges();
       }
+    });
+  }
+
+  get totalReviews(): number {
+    return this.statistiche?.totaleRecensioni || 0;
+  }
+
+  get avgRatingNumber(): number {
+    return this.statistiche?.mediaStelle || 0;
+  }
+
+  get averageRating(): string {
+    return this.avgRatingNumber.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  getRatingDistribution() {
+    const defaultDist = [
+      { stelle: 5, count: 0, percentage: 0 },
+      { stelle: 4, count: 0, percentage: 0 },
+      { stelle: 3, count: 0, percentage: 0 },
+      { stelle: 2, count: 0, percentage: 0 },
+      { stelle: 1, count: 0, percentage: 0 }
+    ];
+
+    if (!this.statistiche || this.statistiche.totaleRecensioni === 0) return defaultDist;
+
+    return defaultDist.map(d => {
+      const count = this.statistiche!.distribuzione[d.stelle] || 0;
+      return {
+        stelle: d.stelle,
+        count: count,
+        percentage: (count / this.statistiche!.totaleRecensioni) * 100
+      };
+    });
+  }
+
+  // --- UTILITY PER RICARICARE LE STATS IN TEMPO REALE ---
+  aggiornaStatisticheInTempoReale() {
+    if(!this.film) return;
+    this.filmService.ottieniStatisticheRecensioni(this.film.idFilm).subscribe(stats => {
+      this.statistiche = stats;
+      this.cdr.detectChanges();
     });
   }
 
@@ -145,22 +208,6 @@ export class DettaglioFilmComponent implements OnInit {
     this.mostraFormRecensione = !this.mostraFormRecensione;
   }
 
-  get totalReviews(): number {
-    return this.film?.recensioni?.length || 0;
-  }
-
-  get averageRating(): string {
-    if (this.totalReviews === 0) return '0,00';
-    const sum = this.film!.recensioni!.reduce((acc, curr) => acc + curr.stelle, 0);
-    return (sum / this.totalReviews).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  get avgRatingNumber(): number {
-    if (this.totalReviews === 0) return 0;
-    const sum = this.film!.recensioni!.reduce((acc, curr) => acc + curr.stelle, 0);
-    return sum / this.totalReviews;
-  }
-
   get ratingSubtitle(): string {
     const avg = this.avgRatingNumber;
     if (this.totalReviews === 0) return 'Nessuna recensione';
@@ -171,54 +218,20 @@ export class DettaglioFilmComponent implements OnInit {
     return 'Da evitare';
   }
 
-  getRatingDistribution(): { stelle: number, count: number, percentage: number }[] {
-    const defaultDist = [
-      { stelle: 5, count: 0, percentage: 0 },
-      { stelle: 4, count: 0, percentage: 0 },
-      { stelle: 3, count: 0, percentage: 0 },
-      { stelle: 2, count: 0, percentage: 0 },
-      { stelle: 1, count: 0, percentage: 0 }
-    ];
-
-    if (!this.film?.recensioni || this.film.recensioni.length === 0) {
-      return defaultDist;
-    }
-
-    const total = this.totalReviews;
-    const distribution = defaultDist.map(d => ({ ...d }));
-
-    this.film.recensioni.forEach((r: any) => {
-      const idx = distribution.findIndex(d => d.stelle === r.stelle);
-      if (idx !== -1) {
-        distribution[idx].count++;
-      }
-    });
-
-    distribution.forEach(d => {
-      d.percentage = (d.count / total) * 100;
-    });
-
-    return distribution;
-  }
-
   inviaRecensione() {
     if (!this.nuovoCommento.trim() || !this.film) return;
+    const payload = { stelle: this.votoSelezionato, commento: this.nuovoCommento };
 
-    const payload = {
-      stelle: this.votoSelezionato,
-      commento: this.nuovoCommento
-    };
-
-    // Usiamo il servizio invece di this.http
     this.filmService.inviaRecensione(this.film.idFilm, payload).subscribe({
-      next: (nuovaRecensione: any) => {
-        // Se il backend restituisce il DTO della recensione, lo aggiungiamo alla lista locale
-        if (!this.film!.recensioni) this.film!.recensioni = [];
-        this.film!.recensioni.unshift(nuovaRecensione);
+      next: (nuovaRecensione: RecensioneResponseDTO) => {
+        this.recensioni.unshift(nuovaRecensione);
+
+        // 1. RICHIAMA QUI: Il DB ha salvato, ricalcoliamo le statistiche totali
+        this.aggiornaStatisticheInTempoReale();
 
         this.film!.puoRecensire = false;
-        this.nuovoCommento = ''; // Reset del campo
-        this.notificationService.success("Grazie per la tua recensione! 🍿");
+        this.nuovoCommento = '';
+        this.notificationService.success("Grazie per la tua recensione!");
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -247,16 +260,18 @@ export class DettaglioFilmComponent implements OnInit {
 
   salvaModifica(idRecensione: number) {
     if (!this.editCommento.trim()) return;
-
     const payload = { stelle: this.editVoto, commento: this.editCommento };
 
     this.filmService.modificaRecensione(idRecensione, payload).subscribe({
-      next: (recensioneAggiornata: any) => {
-        // Aggiorniamo la recensione nell'array locale
-        const index = this.film!.recensioni!.findIndex(x => x.id === idRecensione);
+      next: (recensioneAggiornata: RecensioneResponseDTO) => {
+        const index = this.recensioni.findIndex(x => x.id === idRecensione);
         if (index !== -1) {
-          this.film!.recensioni![index] = recensioneAggiornata;
+          this.recensioni[index] = recensioneAggiornata;
         }
+
+        // 2. RICHIAMA QUI: L'update è andato a buon fine, sincronizziamo le stats
+        this.aggiornaStatisticheInTempoReale();
+
         this.recensioneInModificaId = null;
         this.notificationService.success("Recensione modificata con successo!");
         this.cdr.detectChanges();
@@ -279,18 +294,17 @@ export class DettaglioFilmComponent implements OnInit {
 
     this.filmService.eliminaRecensione(idRecensione).subscribe({
       next: () => {
-        // Rimuoviamo la recensione dalla vista locale
-        this.film!.recensioni = this.film!.recensioni!.filter(x => x.id !== idRecensione);
+        this.recensioni = this.recensioni.filter(x => x.id !== idRecensione);
 
-        // Innovazione UX: se non sono un admin (o se l'ho cancellata ed ero io l'autore), riabilito il form
-        if (this.film!.recensioni.every(x => x.emailCliente !== this.currentUserEmail)) {
+        // Ricalcola i valori veri chiedendo al DB
+        this.aggiornaStatisticheInTempoReale();
+
+        if (this.recensioni.every(x => x.emailCliente !== this.currentUserEmail)) {
           this.film!.puoRecensire = true;
         }
-
         this.notificationService.success("Recensione rimossa con successo.");
         this.cdr.detectChanges();
-      },
-      error: (err) => this.notificationService.error(err.error?.message || "Impossibile eliminare.")
+      }
     });
   }
 
@@ -310,12 +324,12 @@ export class DettaglioFilmComponent implements OnInit {
   }
 
   get recensioniMostrate(): any[] {
-    if (!this.film?.recensioni) return [];
-    
+    if (!this.recensioni || this.recensioni.length === 0) return [];
+
     if (this.filtroStelle) {
-      return this.film.recensioni.filter(r => r.stelle === this.filtroStelle);
+      return this.recensioni.filter(r => r.stelle === this.filtroStelle);
     }
-    
-    return this.film.recensioni;
+
+    return this.recensioni;
   }
 }

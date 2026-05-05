@@ -33,13 +33,6 @@ export interface CreaFilmRequest
 }
 
 export interface Recensione {
-  nomeCliente: string;
-  stelle: number;
-  commento: string;
-  data: string;
-}
-
-export interface Recensione {
   id: number;
   emailCliente: string;
   nomeCliente: string;
@@ -53,3 +46,17 @@ export interface FunFact {
   testo: string;
 }
 
+export interface RecensioneResponseDTO {
+  id: number;
+  emailCliente: string;
+  nomeCliente: string;
+  stelle: number;
+  commento: string;
+  data: string;
+}
+
+export interface StatisticheRecensioniDTO {
+  mediaStelle: number;
+  totaleRecensioni: number;
+  distribuzione: { [key: number]: number };
+}
