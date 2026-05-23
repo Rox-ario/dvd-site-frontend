@@ -2,8 +2,9 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { CartService } from '../../../services/cart';
+import { NotificationService } from '../../../services/notification.service';
 import { OrdineService } from '../../../services/ordine.service';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-checkout',
@@ -16,6 +17,7 @@ export class CheckoutComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+  conflictError = false;  // true quando il backend risponde 409 (Optimistic Lock)
   checkoutForm: FormGroup;
 
   constructor(
@@ -23,7 +25,8 @@ export class CheckoutComponent implements OnInit {
     private ordineService: OrdineService,
     private router: Router,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notificationService: NotificationService
   ) {
     this.checkoutForm = this.fb.group({
       // Sezione Spedizione (I dati che viaggeranno verso il backend)
@@ -41,8 +44,9 @@ export class CheckoutComponent implements OnInit {
 
   ngOnInit() {
     // Controllo logico: non ha senso stare qui se il carrello è vuoto
+    // (ma non se stiamo già gestendo un errore di conflitto o un successo)
     this.cartService.cartItems$.subscribe(items => {
-      if (items.length === 0 && !this.successMessage) {
+      if (items.length === 0 && !this.successMessage && !this.conflictError) {
         this.router.navigate(['/catalogo']);
       }
     });
@@ -115,7 +119,32 @@ export class CheckoutComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err.error?.message || err.error || 'Transazione fallita.';
+
+        // Estraiamo il messaggio pulito (Spring boot inserisce il messaggio in err.error.message o nella root)
+        const messaggioErrore = err.error?.message || err.error || 'Transazione fallita.';
+        this.errorMessage = messaggioErrore;
+
+        // 2. Intercettiamo il Conflitto (409) dell'Optimistic Lock
+        if (err.status === 409) {
+          // Blocchiamo subito il form: il prodotto non è più disponibile
+          this.conflictError = true;
+
+          // Svuotiamo il carrello: l'ordine era atomico, tutti i prodotti
+          // vanno rimossi così l'utente riparte da zero nel catalogo
+          this.cartService.svuotaCarrello();
+
+          // Toast con durata aumentata (8 secondi) per dare tempo di leggere
+          this.notificationService.error("🍿 Oh no! " + messaggioErrore, 8000);
+
+          // Riportiamo l'utente al catalogo dopo 4 secondi
+          setTimeout(() => {
+            this.router.navigate(['/catalogo']);
+          }, 4000);
+        } else {
+          // Per tutti gli altri errori
+          this.notificationService.error(messaggioErrore);
+        }
+
         this.cdr.detectChanges();
       }
     });

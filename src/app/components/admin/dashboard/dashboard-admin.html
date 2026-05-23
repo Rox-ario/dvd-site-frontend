@@ -4,7 +4,17 @@
       <h1>Pannello di Controllo</h1>
       <p>Panoramica finanziaria e logistica del negozio.</p>
     </div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span class="last-updated-badge" *ngIf="lastUpdated">
+        ⏱ Aggiornato alle {{ lastUpdated | date:'HH:mm:ss' }}
+      </span>
+      <button class="btn-refresh" (click)="refreshManuale()" [disabled]="isRefreshing">
+        <span *ngIf="!isRefreshing">🔄 Aggiorna ora</span>
+        <span *ngIf="isRefreshing">⏳ Caricamento...</span>
+      </button>
+    </div>
   </header>
+
 
   <div class="stats-grid">
     <div class="stat-card">

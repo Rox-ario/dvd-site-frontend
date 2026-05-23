@@ -9,9 +9,20 @@
       {{ successMessage }}
       <p class="small-text">Reindirizzamento allo storico ordini in corso...</p>
     </div>
-    <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
 
-    <div style="display: flex; gap: 2rem; flex-wrap: wrap;" *ngIf="!successMessage">
+    <!-- Schermata di errore per acquisto concorrente (409) -->
+    <div class="conflict-error-panel" *ngIf="conflictError">
+      <div class="conflict-icon">🍿</div>
+      <h2>Oh no! Prodotto non più disponibile</h2>
+      <p>{{ errorMessage }}</p>
+      <p class="small-text">Reindirizzamento al catalogo in corso...</p>
+    </div>
+
+    <!-- Errore generico (non-409): mostrato sopra il form -->
+    <div class="alert alert-danger" *ngIf="errorMessage && !conflictError">{{ errorMessage }}</div>
+
+    <!-- Il form viene nascosto in caso di successo O di conflitto (409) -->
+    <div style="display: flex; gap: 2rem; flex-wrap: wrap;" *ngIf="!successMessage && !conflictError">
 
       <form [formGroup]="checkoutForm" (ngSubmit)="confermaOrdine()" style="flex: 1; min-width: 300px;">
 

@@ -132,6 +132,40 @@ button:disabled {
 .alert-danger { background-color: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
 .small-text { font-size: 0.85rem; margin-top: 0.5rem; }
 
+/* Pannello errore acquisto concorrente (409 Optimistic Lock) */
+.conflict-error-panel {
+  text-align: center;
+  padding: 3rem 2rem;
+  animation: fadeIn 0.4s ease;
+}
+
+.conflict-error-panel .conflict-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: pulse 1.5s infinite;
+}
+
+.conflict-error-panel h2 {
+  color: #dc2626;
+  font-size: 1.5rem;
+  margin: 0 0 0.75rem 0;
+}
+
+.conflict-error-panel p {
+  color: #4b5563;
+  margin: 0 0 0.5rem 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.2); }
+}
+
 .form-group { margin-bottom: 1rem; display: flex; flex-direction: column; }
 .form-group label { margin-bottom: 0.25rem; font-weight: 500; font-size: 0.9rem; color: #4b5563; }
 .form-group input { padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; outline: none; transition: border-color 0.2s; }

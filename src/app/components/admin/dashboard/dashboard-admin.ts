@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrdineService } from '../../../services/ordine.service';
@@ -14,7 +14,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: './dashboard-admin.html',
   styleUrls: ['./dashboard-admin.css']
 })
-export class DashboardAdminComponent implements OnInit {
+export class DashboardAdminComponent implements OnInit, OnDestroy {
   ordini: OrdineResponse[] = [];
   ordiniFiltrati: OrdineResponse[] = [];
   isLoading = true;
@@ -27,6 +27,12 @@ export class DashboardAdminComponent implements OnInit {
   statiDisponibili = ['IN_ELABORAZIONE', 'SPEDITO', 'CONSEGNATO', 'ANNULLATO'];
   ordinamentoData: 'DESC' | 'ASC' = 'DESC';
 
+  // Auto-polling
+  private pollingInterval: any;
+  private readonly POLLING_MS = 15_000; // 15 secondi
+  lastUpdated: Date | null = null;
+  isRefreshing = false; // spinner separato per il refresh manuale
+
   constructor(
     private ordineService: OrdineService,
     private notificationService: NotificationService,
@@ -35,16 +41,23 @@ export class DashboardAdminComponent implements OnInit {
 
   ngOnInit(): void {
     this.caricaOrdini();
+    // Avvia il polling automatico
+    this.pollingInterval = setInterval(() => this.aggiornaSilenzioso(), this.POLLING_MS);
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
   }
 
   caricaOrdini() {
     this.isLoading = true;
     this.ordineService.ottieniTuttiGliOrdini().subscribe({
       next: (page) => {
-        // Estrai .content dall'oggetto Page
         this.ordini = Array.isArray(page.content) ? page.content : [];
         this.ordini.forEach(o => o.stato = o.stato || 'IN_ELABORAZIONE');
-
+        this.lastUpdated = new Date();
         this.applicaFiltro();
         this.calcolaStatistiche();
         this.isLoading = false;
@@ -53,6 +66,43 @@ export class DashboardAdminComponent implements OnInit {
       error: () => {
         this.notificationService.error('Impossibile caricare il registro degli ordini dal server.');
         this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /** Aggiornamento silenzioso (usato dal polling): non mostra il loader principale */
+  aggiornaSilenzioso() {
+    this.ordineService.ottieniTuttiGliOrdini().subscribe({
+      next: (page) => {
+        this.ordini = Array.isArray(page.content) ? page.content : [];
+        this.ordini.forEach(o => o.stato = o.stato || 'IN_ELABORAZIONE');
+        this.lastUpdated = new Date();
+        this.applicaFiltro();
+        this.calcolaStatistiche();
+        this.cdr.detectChanges();
+      },
+      error: () => { /* ignora errori di polling silenzioso */ }
+    });
+  }
+
+  /** Refresh manuale premendo il pulsante */
+  refreshManuale() {
+    this.isRefreshing = true;
+    this.cdr.detectChanges();
+    this.ordineService.ottieniTuttiGliOrdini().subscribe({
+      next: (page) => {
+        this.ordini = Array.isArray(page.content) ? page.content : [];
+        this.ordini.forEach(o => o.stato = o.stato || 'IN_ELABORAZIONE');
+        this.lastUpdated = new Date();
+        this.applicaFiltro();
+        this.calcolaStatistiche();
+        this.isRefreshing = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.notificationService.error('Impossibile aggiornare il registro.');
+        this.isRefreshing = false;
         this.cdr.detectChanges();
       }
     });
