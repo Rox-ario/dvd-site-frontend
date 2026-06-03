@@ -7,7 +7,7 @@ import { NotificationService } from '../../../services/notification.service';
 import { FilmResponse, CreaFilmRequest } from '../../../models/film.model';
 import { Genere, Attore, Regista } from '../../../models/catalogo.model';
 import { RouterLink } from '@angular/router';
-import { Observable, debounceTime, distinctUntilChanged, switchMap, of, map } from 'rxjs';
+import { Observable, debounceTime, distinctUntilChanged, switchMap, of, map, timeout } from 'rxjs';
 import { Page } from '../../../models/pagination.model';
 
 @Component({
@@ -105,21 +105,31 @@ export class GestioneFilmComponent implements OnInit {
     if (this.testoRicerca.trim()) filtri.titolo = this.testoRicerca.trim();
     if (this.genereSelezionato) filtri.nomeGenere = this.genereSelezionato;
 
+    console.log('Caricamento film - Pagina:', this.paginaCorrente, 'Filtri:', filtri);
+
     // Passiamo pagina e dimensione, riceviamo direttamente la Page<FilmResponse>
-    this.filmService.esploraCatalogo(filtri, this.paginaCorrente, this.dimensionePagina).subscribe({
-      next: (page: Page<FilmResponse>) => {
-        this.filmList = page.content;
-        this.totaleElementi = page.totalElements;
-        this.totalePagine = page.totalPages;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.filmList = [];
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.filmService.esploraCatalogo(filtri, this.paginaCorrente, this.dimensionePagina)
+      .pipe(timeout(15000)) // Timeout di 15 secondi
+      .subscribe({
+        next: (page: Page<FilmResponse>) => {
+          console.log('Film caricati:', page);
+          this.filmList = page.content;
+          this.totaleElementi = page.totalElements;
+          this.totalePagine = page.totalPages;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Errore nel caricamento film:', err);
+          this.filmList = [];
+          this.isLoading = false;
+          const messaggioErrore = err.name === 'TimeoutError'
+            ? 'Timeout: il server impiega troppo tempo a rispondere.'
+            : 'Errore nel caricamento del catalogo. Controlla la console.';
+          this.notificationService.error(messaggioErrore);
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   inizializzaTypeahead() {
@@ -357,31 +367,34 @@ export class GestioneFilmComponent implements OnInit {
     this.creazioneRapida.attiva = false;
   }
 
-  salvaEntitaRapida() {
-    const { tipo, nome, cognome } = this.creazioneRapida;
-    if (!nome.trim()) return;
+   salvaEntitaRapida() {
+     const { tipo, nome, cognome } = this.creazioneRapida;
+     if (!nome.trim()) return;
 
-    if (tipo === 'genere') {
-      this.adminCatalogoService.creaGenere({ nome: nome.trim() }).subscribe({
-        next: (nuovo) => {
-          this.aggiungiGenere(nuovo);
-          this.annullaCreazioneRapida();
-        }
-      });
-    } else if (tipo === 'regista') {
-      this.adminCatalogoService.creaRegista({ nome: nome.trim(), cognome: cognome.trim() }).subscribe({
-        next: (nuovo) => {
-          this.aggiungiRegista(nuovo);
-          this.annullaCreazioneRapida();
-        }
-      });
-    } else if (tipo === 'attore') {
-      this.adminCatalogoService.creaAttore({ nome: nome.trim(), cognome: cognome.trim() }).subscribe({
-        next: (nuovo) => {
-          this.aggiungiAttore(nuovo);
-          this.annullaCreazioneRapida();
-        }
-      });
-    }
-  }
+     if (tipo === 'genere') {
+       this.adminCatalogoService.creaGenere({ nome: nome.trim() }).subscribe({
+         next: (nuovo) => {
+           this.aggiungiGenere(nuovo);
+           this.annullaCreazioneRapida();
+           this.cdr.detectChanges();
+         }
+       });
+     } else if (tipo === 'regista') {
+       this.adminCatalogoService.creaRegista({ nome: nome.trim(), cognome: cognome.trim() }).subscribe({
+         next: (nuovo) => {
+           this.aggiungiRegista(nuovo);
+           this.annullaCreazioneRapida();
+           this.cdr.detectChanges();
+         }
+       });
+     } else if (tipo === 'attore') {
+       this.adminCatalogoService.creaAttore({ nome: nome.trim(), cognome: cognome.trim() }).subscribe({
+         next: (nuovo) => {
+           this.aggiungiAttore(nuovo);
+           this.annullaCreazioneRapida();
+           this.cdr.detectChanges();
+         }
+       });
+     }
+   }
 }
