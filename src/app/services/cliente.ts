@@ -9,6 +9,7 @@ import { FilmResponse } from '../models/film.model';
 })
 export class ClienteService {
   private readonly API_URL = 'http://localhost:8080/api/clienti/me';
+  private readonly REGISTER_URL = 'http://localhost:8080/api/clienti/register';
 
   constructor(private http: HttpClient) { }
 
@@ -35,7 +36,11 @@ export class ClienteService {
     return this.http.get<number[]>(`${this.API_URL}/preferiti/ids`);
   }
 
-  sincronizzaClienteDaToken(): Observable<any> {
-    return this.http.get(this.API_URL);
+  /**
+   * Chiamato subito dopo il login Keycloak.
+   * Crea il Cliente nel DB se non esiste ancora (idempotente).
+   */
+  registraCliente(): Observable<ClienteProfileResponse> {
+    return this.http.post<ClienteProfileResponse>(this.REGISTER_URL, {});
   }
 }

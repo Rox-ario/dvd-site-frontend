@@ -37,13 +37,12 @@ export class App implements OnInit {
 
   private eseguiSincronizzazioneJIT() {
     this.isSyncing.set(true);
-    // La GET su /profilo forza il backend Spring Boot a estrarre il token
-    // e creare il record a DB se non esiste ancora.
-    this.clienteService.ottieniProfilo().subscribe({
+    // POST /api/clienti/register: crea il Cliente nel DB se non esiste ancora.
+    // Idempotente: se esiste già restituisce il profilo esistente senza errori.
+    this.clienteService.registraCliente().subscribe({
       next: () => this.isSyncing.set(false),
       error: (err) => {
         console.error("Errore critico di sincronizzazione JIT", err);
-        // Eventuale logica di fallback (es. forzare il logout se il DB è giù)
         this.isSyncing.set(false);
       }
     });

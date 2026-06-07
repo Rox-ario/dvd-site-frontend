@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AuthConfig, OAuthService } from 'angular-oauth2-oidc';
-import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
+import { BehaviorSubject, ReplaySubject } from 'rxjs';
 import { Router } from '@angular/router';
 
 export const authCodeFlowConfig: AuthConfig = {
@@ -61,13 +61,24 @@ export class AuthService {
   }
 
   public register(): void {
-    // Costruisce l'URL diretto alla pagina di registrazione di Keycloak
-    const redirectUri = encodeURIComponent(authCodeFlowConfig.redirectUri as string);
-    const clientId = authCodeFlowConfig.clientId;
-    const registerUrl =
-      `${authCodeFlowConfig.issuer}/protocol/openid-connect/registrations` +
-      `?client_id=${clientId}&response_type=code&scope=openid+profile+email&redirect_uri=${redirectUri}`;
-    window.location.href = registerUrl;
+    this.oauthService.loadDiscoveryDocument().then(() => {
+      // Keycloak espone /registrations per la registrazione e /auth per il login.
+      // Modifichiamo loginUrl PRIMA di chiamare initCodeFlow: in questo modo
+      // PKCE e state vengono generati correttamente e Keycloak mostra il form
+      // di registrazione. Dopo la registrazione completa il normale OIDC code flow.
+      //
+      // IMPORTANTE: NON ripristinare loginUrl dopo initCodeFlow.
+      // createLoginUrl() è async: ha un `await createAndSaveNonce()` prima di
+      // leggere loginUrl, quindi un ripristino sincrono lo farebbe tornare a /auth.
+      if (this.oauthService.loginUrl) {
+        this.oauthService.loginUrl = this.oauthService.loginUrl.replace(
+          '/protocol/openid-connect/auth',
+          '/protocol/openid-connect/registrations'
+        );
+      }
+      this.oauthService.initCodeFlow('/profilo');
+      // Non ripristinare: il browser naviga via subito e l'app si reinizializza.
+    });
   }
 
   public logout() {

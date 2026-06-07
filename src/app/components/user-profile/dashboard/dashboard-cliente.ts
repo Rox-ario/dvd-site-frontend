@@ -61,18 +61,30 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
       .subscribe((isDone) => {
         if (isDone) {
           this.isAdmin = this.authService.isAdmin;
-
-          // CORREZIONE: Assegna il tab di default corretto in base al ruolo
           this.activeTab = this.isAdmin ? 'pannello' : 'preferiti';
 
-          this.caricaProfilo();
-
-          // Carica gli ordini per l'admin
           if (this.isAdmin) {
+            // Gli admin non hanno un record Cliente: carica solo gli ordini
             this.caricaOrdiniAdmin();
+            this.cdr.detectChanges();
+          } else {
+            // Assicura che il Cliente esista nel DB prima di caricare il profilo.
+            // registraCliente() è idempotente: se esiste già restituisce il profilo.
+            this.clienteService.registraCliente()
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: () => {
+                  this.caricaProfilo();
+                  this.cdr.detectChanges();
+                },
+                error: (err) => {
+                  console.error('[Dashboard] registraCliente() fallito:', err.status, err.message, err.error);
+                  // Fallback: prova comunque a caricare il profilo
+                  this.caricaProfilo();
+                  this.cdr.detectChanges();
+                }
+              });
           }
-
-          this.cdr.detectChanges();
         }
       });
   }
@@ -106,8 +118,9 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
             this.caricaPreferiti();
           }
         },
-        error: () => {
-          this.errorMessage = 'Errore durante il caricamento del profilo.';
+        error: (err) => {
+          console.error('[Dashboard] caricaProfilo() fallito:', err.status, err.message, err.error);
+          this.errorMessage = `Errore durante il caricamento del profilo. (HTTP ${err.status})`;
           this.isLoading = false;
           this.cdr.detectChanges();
         }
