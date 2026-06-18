@@ -114,5 +114,12 @@
         </div>
       </article>
     </div>
+
+    <div *ngIf="hasMore" style="text-align: center; margin-top: 3rem;">
+      <button class="btn-toggle-filters" (click)="caricaAltri()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Carica altri film</span>
+        <span *ngIf="isLoading">Caricamento...</span>
+      </button>
+    </div>
   </main>
 </div>
