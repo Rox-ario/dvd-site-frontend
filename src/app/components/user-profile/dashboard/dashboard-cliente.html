@@ -1,33 +1,30 @@
 <div class="profile-container" [class.admin-mode]="isAdmin">
 
-  <div class="loader-container" *ngIf="isLoading && !profilo">
+  <!-- Loader: mostrato finché l'auth non è pronta per il cliente -->
+  <div class="loader-container" *ngIf="isLoading && !profilo && !isAdmin">
     <div class="spinner"></div>
     <p>Caricamento profilo...</p>
   </div>
 
   <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
 
-  <ng-container *ngIf="profilo">
-    <div class="profile-hero-card" [class.admin-hero]="isAdmin">
+  <!-- ============================================================ -->
+  <!-- VISTA ADMIN: non richiede profilo (l'admin non è un Cliente) -->
+  <!-- ============================================================ -->
+  <ng-container *ngIf="isAdmin">
+    <div class="profile-hero-card admin-hero">
       <div class="hero-banner">
-        <span class="hero-banner-label" *ngIf="isAdmin">PANNELLO AMMINISTRATORE</span>
+        <span class="hero-banner-label">PANNELLO AMMINISTRATORE</span>
       </div>
-
       <div class="hero-body">
-        <div class="avatar-squircle" [class.admin-avatar]="isAdmin">
-          {{ getIniziale() }}
-        </div>
-
+        <div class="avatar-squircle admin-avatar">A</div>
         <div class="user-main-info">
           <div>
-            <h1 class="user-name">{{ profilo.nome }} {{ profilo.cognome }}</h1>
-            <p class="user-email">{{ profilo.email }}</p>
+            <h1 class="user-name">Area Amministrazione</h1>
+            <p class="user-email">Gestione ordini e catalogo</p>
           </div>
-
           <div class="user-badges">
-            <span class="badge role-badge" [class.admin-role-badge]="isAdmin">
-              {{ isAdmin ? 'ADMIN' : 'CLIENTE' }}
-            </span>
+            <span class="badge role-badge admin-role-badge">ADMIN</span>
           </div>
         </div>
       </div>
@@ -56,52 +53,88 @@
       </div>
     </div>
 
-    <!-- ============================== -->
-    <!-- TABS NAVIGATION                -->
-    <!-- ============================== -->
+    <!-- Tab admin -->
     <div class="tabs-nav">
+      <button class="tab-btn" [class.active]="activeTab === 'pannello'" (click)="setTab('pannello')">
+        <span class="tab-icon">🎛️</span> Pannello di Controllo
+      </button>
+      <a routerLink="/admin/gestione-film" class="tab-btn tab-link">
+        <span class="tab-icon">🎬</span> Gestione Film
+      </a>
+    </div>
 
-      <ng-container *ngIf="isAdmin">
-        <button class="tab-btn" [class.active]="activeTab === 'pannello'" (click)="setTab('pannello')">
-          <span class="tab-icon">🎛️</span> Pannello di Controllo
+    <div class="tab-content-area">
+      <div *ngIf="activeTab === 'pannello'" class="fade-in">
+        <app-dashboard-admin></app-dashboard-admin>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ============================================================ -->
+  <!-- VISTA CLIENTE: richiede profilo                              -->
+  <!-- ============================================================ -->
+  <ng-container *ngIf="!isAdmin && profilo">
+    <div class="profile-hero-card">
+      <div class="hero-banner"></div>
+      <div class="hero-body">
+        <div class="avatar-squircle">
+          {{ getIniziale() }}
+        </div>
+        <div class="user-main-info">
+          <div>
+            <h1 class="user-name">{{ profilo.nome }} {{ profilo.cognome }}</h1>
+            <p class="user-email">{{ profilo.email }}</p>
+          </div>
+          <div class="user-badges">
+            <span class="badge role-badge">CLIENTE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sicurezza e Accesso -->
+    <div class="security-card modern-fade-in">
+      <div class="security-card-inner">
+        <div class="security-icon-wrap">
+          <span class="security-icon">🔐</span>
+        </div>
+        <div class="security-info">
+          <h3 class="security-title">Sicurezza e Accesso</h3>
+          <p class="security-desc">
+            Gestisci le tue credenziali di accesso e il cambio password tramite il nostro sistema di sicurezza certificato.
+          </p>
+        </div>
+        <button type="button" class="btn-credentials" (click)="gestisciAccountSicurezza()">
+          <span class="btn-credentials-icon">🔑</span>
+          <span class="btn-credentials-text">
+            <strong>Gestisci Credenziali</strong>
+            <small>Password &amp; Dati personali</small>
+          </span>
+          <span class="btn-credentials-arrow">→</span>
         </button>
-        <a routerLink="/admin/gestione-film" class="tab-btn tab-link">
-          <span class="tab-icon">🎬</span> Gestione Film
-        </a>
-      </ng-container>
+      </div>
+    </div>
 
-      <!-- SOLO CLIENTE -->
-      <button *ngIf="!isAdmin" class="tab-btn" [class.active]="activeTab === 'ordini'" (click)="setTab('ordini')">
+    <!-- Tab cliente -->
+    <div class="tabs-nav">
+      <button class="tab-btn" [class.active]="activeTab === 'ordini'" (click)="setTab('ordini')">
         <span class="tab-icon">📦</span> Storico Ordini
       </button>
-
-      <!-- SOLO CLIENTE -->
-      <button *ngIf="!isAdmin" class="tab-btn" [class.active]="activeTab === 'preferiti'" (click)="setTab('preferiti')">
+      <button class="tab-btn" [class.active]="activeTab === 'preferiti'" (click)="setTab('preferiti')">
         <span class="tab-icon">🤍</span> I Tuoi Preferiti
       </button>
     </div>
 
-    <!-- ============================== -->
-    <!-- TAB CONTENT                    -->
-    <!-- ============================== -->
     <div class="tab-content-area">
-
-      <div *ngIf="activeTab === 'pannello' && isAdmin" class="fade-in">
-        <app-dashboard-admin></app-dashboard-admin>
-      </div>
-
-      <!-- CLIENTE: Preferiti -->
-      <div *ngIf="activeTab === 'preferiti' && !isAdmin" class="fade-in">
+      <div *ngIf="activeTab === 'preferiti'" class="fade-in">
         <div class="empty-state-dashed" *ngIf="preferitiDettagliati.length === 0">
           Non hai ancora aggiunto film ai preferiti.
         </div>
-
         <div class="favorites-grid" *ngIf="preferitiDettagliati.length > 0">
           <div class="favorite-card" *ngFor="let film of preferitiDettagliati">
             <a [routerLink]="['/dettaglio', film.idFilm]">
               <img [src]="film.urlImmagine" [alt]="'Locandina di ' + film.titolo" class="fav-poster">
             </a>
-
             <button class="btn-remove-fav" (click)="rimuoviDaPreferiti(film.idFilm)" title="Rimuovi dai preferiti">
               ✕
             </button>
@@ -109,11 +142,10 @@
         </div>
       </div>
 
-      <!-- COMUNE: Storico Ordini -->
       <div *ngIf="activeTab === 'ordini'" class="fade-in">
         <app-storico-ordini></app-storico-ordini>
       </div>
-
     </div>
   </ng-container>
+
 </div>

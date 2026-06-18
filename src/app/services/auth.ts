@@ -4,7 +4,6 @@ import { BehaviorSubject, ReplaySubject } from 'rxjs';
 import { Router } from '@angular/router';
 
 export const authCodeFlowConfig: AuthConfig = {
-  // SOSTITUISCI CON L'URL DEL TUO KEYCLOAK (es: http://localhost:8080 non è corretto se è il backend, Keycloak di solito è su un'altra porta come 8081 o 9090)
   issuer: 'http://localhost:8081/realms/dvd-ecommerce',
   redirectUri: window.location.origin,
   clientId: 'frontend-angular', // Nome del client configurato su Keycloak
@@ -24,7 +23,6 @@ export class AuthService {
 
 
   constructor(private oauthService: OAuthService, private router: Router) {
-    // Il costruttore ora deve essere vuoto. L'inizializzazione è delegata.
   }
 
   public async initializeKeycloak(): Promise<boolean> {
@@ -62,14 +60,6 @@ export class AuthService {
 
   public register(): void {
     this.oauthService.loadDiscoveryDocument().then(() => {
-      // Keycloak espone /registrations per la registrazione e /auth per il login.
-      // Modifichiamo loginUrl PRIMA di chiamare initCodeFlow: in questo modo
-      // PKCE e state vengono generati correttamente e Keycloak mostra il form
-      // di registrazione. Dopo la registrazione completa il normale OIDC code flow.
-      //
-      // IMPORTANTE: NON ripristinare loginUrl dopo initCodeFlow.
-      // createLoginUrl() è async: ha un `await createAndSaveNonce()` prima di
-      // leggere loginUrl, quindi un ripristino sincrono lo farebbe tornare a /auth.
       if (this.oauthService.loginUrl) {
         this.oauthService.loginUrl = this.oauthService.loginUrl.replace(
           '/protocol/openid-connect/auth',
@@ -77,7 +67,6 @@ export class AuthService {
         );
       }
       this.oauthService.initCodeFlow('/profilo');
-      // Non ripristinare: il browser naviga via subito e l'app si reinizializza.
     });
   }
 
