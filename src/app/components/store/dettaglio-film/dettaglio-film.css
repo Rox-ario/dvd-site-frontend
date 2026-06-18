@@ -1240,28 +1240,38 @@ button.badge-genre.collapse-action {
   }
 }
 
-/* Scroller orizzontale moderno (Nascita scrollbar nativa) */
 .fun-facts-scroller {
   display: flex;
   gap: 1.5rem;
   overflow-x: auto;
   padding-bottom: 1rem;
-  /* Spazio per l'ombra */
   scroll-snap-type: x mandatory;
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
+  /* Assicurati che l'ultima card non si appiccichi al bordo */
+  padding-right: 2rem;
 }
 
+/* Stile per una scrollbar moderna e minimale */
 .fun-facts-scroller::-webkit-scrollbar {
-  display: none;
-  /* Chrome, Safari and Opera */
+  height: 8px;
 }
 
-/* Card individuali */
+.fun-facts-scroller::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.fun-facts-scroller::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.fun-facts-scroller::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 .fact-card {
-  flex: 0 0 80%;
+  /* Al posto di flex: 0 0 80%, usa un calc per lasciare sempre intravedere la card successiva */
+  flex: 0 0 calc(100% - 3rem);
   max-width: 350px;
   scroll-snap-align: center;
   background: #ffffff;
